@@ -1,0 +1,26 @@
+{
+  "name": "frampton-router",
+  "version": "0.0.1",
+  "description": "A module for managing browser history with frampton.js",
+  "scripts": {
+    "test": "frampton test",
+    "build": "frampton build",
+    "docs": "rm -rfv docs/* && jsdoc dist/frampton-router.js -d docs --readme README.md  --private"
+  },
+  "author": "Kevin Greene <hightimesteddy@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:framptonjs/frampton-router.git"
+  },
+  "bugs": {
+    "url": "https://github.com/framptonjs/frampton-router/issues"
+  },
+  "homepage": "https://github.com/framptonjs/frampton-router",
+  "devDependencies": {
+    "broccoli": "^0.16.2",
+    "broccoli-cli": "^1.0.0",
+    "frampton-build": "*",
+    "qunitjs": "^1.16.0"
+  }
+}
