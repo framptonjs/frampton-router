@@ -344,648 +344,6 @@ define('frampton-cache/cache', ['exports', 'module', 'frampton-utils/extend', 'f
 
   module.exports = Cache;
 });
-define('frampton-data', ['exports', 'frampton/namespace', 'frampton-data/union', 'frampton-data/either', 'frampton-data/maybe', 'frampton-data/task', 'frampton-data/when', 'frampton-data/sequence', 'frampton-data/run_task', 'frampton-data/fork', 'frampton-data/fail', 'frampton-data/succeed'], function (exports, _framptonNamespace, _framptonDataUnion, _framptonDataEither, _framptonDataMaybe, _framptonDataTask, _framptonDataWhen, _framptonDataSequence, _framptonDataRun_task, _framptonDataFork, _framptonDataFail, _framptonDataSucceed) {
-  'use strict';
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _Frampton = _interopRequire(_framptonNamespace);
-
-  var _Union = _interopRequire(_framptonDataUnion);
-
-  var _Task = _interopRequire(_framptonDataTask);
-
-  var _when = _interopRequire(_framptonDataWhen);
-
-  var _sequence = _interopRequire(_framptonDataSequence);
-
-  var _runTask = _interopRequire(_framptonDataRun_task);
-
-  var _fork = _interopRequire(_framptonDataFork);
-
-  var _fail = _interopRequire(_framptonDataFail);
-
-  var _succeed = _interopRequire(_framptonDataSucceed);
-
-  /**
-   * @name Data
-   * @namespace
-   * @memberof Frampton
-   */
-  _Frampton.Data = {};
-  _Frampton.Data.Union = _Union;
-  _Frampton.Data.Either = _framptonDataEither.Either;
-  _Frampton.Data.Left = _framptonDataEither.Left;
-  _Frampton.Data.Right = _framptonDataEither.Right;
-  _Frampton.Data.Maybe = _framptonDataMaybe.Maybe;
-  _Frampton.Data.Just = _framptonDataMaybe.Just;
-  _Frampton.Data.Nothing = _framptonDataMaybe.Nothing;
-  _Frampton.Data.Task = _Task;
-  _Frampton.Data.when = _when;
-  _Frampton.Data.sequence = _sequence;
-  _Frampton.Data.runTask = _runTask;
-  _Frampton.Data.fork = _fork;
-  _Frampton.Data.fail = _fail;
-  _Frampton.Data.succeed = _succeed;
-});
-define('frampton-data/either', ['exports', 'frampton-utils/noop', 'frampton-utils/identity', 'frampton-utils/inherits', 'frampton-utils/not_implemented'], function (exports, _framptonUtilsNoop, _framptonUtilsIdentity, _framptonUtilsInherits, _framptonUtilsNot_implemented) {
-  'use strict';
-
-  exports.__esModule = true;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _noop = _interopRequire(_framptonUtilsNoop);
-
-  var _identity = _interopRequire(_framptonUtilsIdentity);
-
-  var _inherits = _interopRequire(_framptonUtilsInherits);
-
-  var _notImplemented = _interopRequire(_framptonUtilsNot_implemented);
-
-  /**
-   *
-   */
-  function Either() {}
-
-  Either.of = function (val) {
-    return new Right(val);
-  };
-
-  Either.prototype.ap = _notImplemented;
-
-  Either.prototype.chain = _notImplemented;
-
-  Either.prototype.map = _notImplemented;
-
-  Either.prototype.toString = _notImplemented;
-
-  Either.prototype.isLeft = function () {
-    return false;
-  };
-
-  Either.prototype.isRight = function () {
-    return false;
-  };
-
-  (0, _inherits)(Left, Either);
-
-  function Left(val) {
-    this.value = val;
-  }
-
-  Left.prototype.ap = _identity;
-
-  Left.prototype.chain = _noop;
-
-  Left.prototype.map = _noop;
-
-  Left.prototype.toString = function () {
-    return 'Left(' + this.value + ')';
-  };
-
-  (0, _inherits)(Right, Either);
-
-  function Right(val) {
-    this.value = val;
-  }
-
-  // ap(<*>) :: Either [x, (b -> c)] -> Either x b -> Either [x, c]
-  Right.prototype.ap = function (either) {
-    return either.map(this.value);
-  };
-
-  // chain(>>=) :: Either [x, b] -> (b -> Either [x, c]) -> Either [x, c]
-  Right.prototype.chain = function (fn) {
-    return fn(this.value);
-  };
-
-  // map :: Either [x, a] -> (a -> b) -> Either [x, b]
-  Right.prototype.map = function (fn) {
-    return new Right(fn(this.value));
-  };
-
-  // toString :: String
-  Right.prototype.toString = function () {
-    return 'Right(' + this.value + ')';
-  };
-
-  // isRight :: Boolean
-  Right.prototype.isRight = function () {
-    return true;
-  };
-
-  exports.Either = Either;
-  exports.Left = Left;
-  exports.Right = Right;
-});
-define('frampton-data/fail', ['exports', 'module', 'frampton-data/task'], function (exports, module, _framptonDataTask) {
-  'use strict';
-
-  //+ fail :: x -> Task x a
-  module.exports = fail;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _Task = _interopRequire(_framptonDataTask);
-
-  function fail(err) {
-    return new _Task(function (reject, _) {
-      return reject(err);
-    });
-  }
-});
-define('frampton-data/fork', ['exports', 'module', 'frampton-data/run_task'], function (exports, module, _framptonDataRun_task) {
-  'use strict';
-
-  //+ fork
-  module.exports = fork;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _runTask = _interopRequire(_framptonDataRun_task);
-
-  function fork(tasks, values, errors) {
-    return tasks.next(function (task) {
-      (0, _runTask)(task, values.push, errors.push);
-    });
-  }
-});
-define('frampton-data/maybe', ['exports', 'frampton-utils/inherits', 'frampton-utils/is_something', 'frampton-utils/not_implemented'], function (exports, _framptonUtilsInherits, _framptonUtilsIs_something, _framptonUtilsNot_implemented) {
-  'use strict';
-
-  exports.__esModule = true;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _inherits = _interopRequire(_framptonUtilsInherits);
-
-  var _isSomething = _interopRequire(_framptonUtilsIs_something);
-
-  var _notImplemented = _interopRequire(_framptonUtilsNot_implemented);
-
-  /**
-   * @name Maybe
-   * @class
-   * @memberof Frampton.Data
-   */
-  function Maybe(a) {}
-
-  /**
-   * @name of
-   * @method
-   * @memberof Frampton.Data.Maybe
-   * @param {*}
-   */
-  Maybe.of = function (val) {
-    return (0, _isSomething)(val) ? new Just(val) : new Nothing();
-  };
-
-  /**
-   * @name of
-   * @method
-   * @memberof Frampton.Data.Maybe#
-   * @param {*}
-   */
-  Maybe.prototype.of = Maybe.of;
-
-  /**
-   * join :: Maybe (Maybe a) -> Maybe a
-   * @name join
-   * @method
-   * @memberof Frampton.Data.Maybe#
-   */
-  Maybe.prototype.join = _notImplemented;
-
-  /**
-   * chain(>>=) :: Maybe a -> (a -> Maybe b) -> Maybe b
-   * @name chain
-   * @method
-   * @memberof Frampton.Data.Maybe#
-   */
-  Maybe.prototype.chain = _notImplemented;
-
-  /**
-   * ap(<*>) :: Maybe (a -> b) -> Maybe a -> Maybe b
-   * @name ap
-   * @method
-   * @memberof Frampton.Data.Maybe#
-   */
-  Maybe.prototype.ap = _notImplemented;
-
-  /**
-   * map :: Maybe a -> (a -> b) -> Maybe b
-   * @name map
-   * @method
-   * @memberof Frampton.Data.Maybe#
-   * @param {Function} mapping Function to map value of Maybe
-   * @returns {Frampton.Data.Maybe}
-   */
-  Maybe.prototype.map = _notImplemented;
-
-  /**
-   * @name isJust
-   * @method
-   * @memberof Frampton.Data.Maybe#
-   * @returns {Boolean}
-   */
-  Maybe.prototype.isJust = function () {
-    return false;
-  };
-
-  /**
-   * @name isNothing
-   * @method
-   * @memberof Frampton.Data.Maybe#
-   * @returns {Boolean}
-   */
-  Maybe.prototype.isNothing = function () {
-    return false;
-  };
-
-  /**
-   * @name get
-   * @method
-   * @memberof Frampton.Data.Maybe#
-   * @returns {*}
-   */
-  Maybe.prototype.get = _notImplemented;
-
-  /**
-   * @name getOrElse
-   * @method
-   * @memberof Frampton.Data.Maybe#
-   * @param {*}
-   * @returns {*}
-   */
-  Maybe.prototype.getOrElse = _notImplemented;
-
-  /**
-   * @name toString
-   * @method
-   * @memberof Frampton.Data.Maybe#
-   * @returns {String}
-   */
-  Maybe.prototype.toString = _notImplemented;
-
-  /**
-   * @name Just
-   * @class
-   * @extends Frampton.Data.Maybe
-   * @memberof Frampton.Data
-   */
-  (0, _inherits)(Just, Maybe);
-
-  function Just(val) {
-    this.value = val;
-  }
-
-  Just.prototype.isJust = function () {
-    return true;
-  };
-
-  // join :: Maybe (Maybe a) -> Maybe a
-  Just.prototype.join = function () {
-    return this.value;
-  };
-
-  // chain(>>=) :: Maybe a -> (a -> Maybe b) -> Maybe b
-  Just.prototype.chain = function (fn) {
-    return this.map(fn).join();
-  };
-
-  // ap(<*>) :: Maybe (a -> b) -> Maybe a -> Maybe b
-  Just.prototype.ap = function (maybe) {
-    return maybe.map(this.value);
-  };
-
-  Just.prototype.map = function (fn) {
-    return this.of(fn(this.value));
-  };
-
-  Just.prototype.get = function () {
-    return this.value;
-  };
-
-  Just.prototype.getOrElse = function (val) {
-    return this.value;
-  };
-
-  Just.prototype.toString = function () {
-    return 'Just(' + this.value + ')';
-  };
-
-  /**
-   * @name Nothing
-   * @class
-   * @extends Frampton.Data.Maybe
-   * @memberof Frampton.Data
-   */
-  (0, _inherits)(Nothing, Maybe);
-
-  function Nothing() {}
-
-  Nothing.prototype.isNothing = function () {
-    return true;
-  };
-
-  Nothing.prototype.ap = function (val) {
-    return val;
-  };
-
-  Nothing.prototype.map = function (fn) {
-    return new Nothing();
-  };
-
-  Nothing.prototype.chain = function (fn) {
-    return new Nothing();
-  };
-
-  Nothing.prototype.toString = function () {
-    return 'Nothing';
-  };
-
-  Nothing.prototype.get = function () {
-    throw new TypeError('Can\'t extract the value of a Nothing.');
-  };
-
-  Nothing.prototype.getOrElse = function (val) {
-    return val;
-  };
-
-  exports.Maybe = Maybe;
-  exports.Just = Just;
-  exports.Nothing = Nothing;
-});
-define("frampton-data/run_task", ["exports", "module"], function (exports, module) {
-  //+ runTask
-  "use strict";
-
-  module.exports = run_task;
-
-  function run_task(task, reject, resolve) {
-    task.run(reject, resolve);
-  }
-});
-define("frampton-data/sequence", ["exports", "module"], function (exports, module) {
-  //+ sequence :: [Task x a] -> Task x a
-  "use strict";
-
-  module.exports = sequence;
-
-  function sequence() {
-    for (var _len = arguments.length, tasks = Array(_len), _key = 0; _key < _len; _key++) {
-      tasks[_key] = arguments[_key];
-    }
-
-    return tasks.reduce(function (acc, next) {
-      return acc.concat(next);
-    });
-  }
-});
-define('frampton-data/succeed', ['exports', 'module', 'frampton-data/task'], function (exports, module, _framptonDataTask) {
-  'use strict';
-
-  //+ succeed :: a -> Task x a
-  module.exports = succeed;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _Task = _interopRequire(_framptonDataTask);
-
-  function succeed(val) {
-    return new _Task(function (_, resolve) {
-      return resolve(val);
-    });
-  }
-});
-define("frampton-data/task", ["exports", "module"], function (exports, module) {
-  /**
-   * Task takes an error stream and a value stream
-   * Task are lazy, must be told to run?
-   * Lazy, possibly async, error-throwing tasks
-   * Stream of tasks, executed and return a new stream
-   * // execute :: EventStream Task x a -> EventStream a
-   * execute(stream) -> EventStream
-   *
-   * // fork :: EventStream Task x a -> EventStream x -> EventStream z -> ()
-   * fork(stream)
-   */
-  "use strict";
-
-  function Task(computation) {
-    this.run = computation;
-  }
-
-  // of(return) :: a -> Success a
-  Task.prototype.of = function (val) {
-    return new Task(function (_, resolve) {
-      return resolve(val);
-    });
-  };
-
-  // join :: Task x (Task x a) -> Task x a
-  Task.prototype.join = function () {
-    var run = this.run;
-    return new Task(function (reject, resolve) {
-      return run(function (err) {
-        return reject(err);
-      }, function (val) {
-        return val.run(reject, resolve);
-      });
-    });
-  };
-
-  // concat(>>) :: Task x a -> Task x b -> Task x b
-  Task.prototype.concat = function (task) {
-    var run = this.run;
-    return new Task(function (reject, resolve) {
-      return run(function (err) {
-        return reject(err);
-      }, function (val) {
-        return task.run(reject, resolve);
-      });
-    });
-  };
-
-  // chain(>>=) :: Task x a -> (a -> Task x b) -> Task x b
-  Task.prototype.chain = function (fn) {
-    return this.map(fn).join();
-  };
-
-  // ap(<*>) :: Task x (a -> b) -> Task x a -> Task x b
-  Task.prototype.ap = function (task) {
-    return this.chain(function (fn) {
-      return task.map(fn);
-    });
-  };
-
-  // recover :: Task x a -> (a -> Task x b) -> Task x b
-  Task.prototype.recover = function (fn) {
-    var run = this.run;
-    return new Task(function (reject, resolve) {
-      return run(function (err) {
-        return fn(err).run(reject, resolve);
-      }, function (val) {
-        return resolve(val);
-      });
-    });
-  };
-
-  // map :: Task x a -> (a -> b) -> Task x b
-  Task.prototype.map = function (fn) {
-    var run = this.run;
-    return new Task(function (reject, resolve) {
-      return run(function (err) {
-        return reject(err);
-      }, function (val) {
-        return resolve(fn(val));
-      });
-    });
-  };
-
-  module.exports = Task;
-});
-define('frampton-data/union', ['exports', 'module', 'frampton-utils/assert', 'frampton-utils/curry_n', 'frampton-utils/is_string', 'frampton-utils/is_number', 'frampton-utils/is_boolean', 'frampton-utils/is_object', 'frampton-utils/is_function', 'frampton-utils/is_array'], function (exports, module, _framptonUtilsAssert, _framptonUtilsCurry_n, _framptonUtilsIs_string, _framptonUtilsIs_number, _framptonUtilsIs_boolean, _framptonUtilsIs_object, _framptonUtilsIs_function, _framptonUtilsIs_array) {
-  /**
-
-  This implementation is largely taken from Simon Friis Vindum
-  https://github.com/paldepind/union-type
-
-  The MIT License (MIT)
-
-  Copyright (c) 2015 Simon Friis Vindum
-
-  Permission is hereby granted, free of charge, to any person obtaining a copy
-  of this software and associated documentation files (the "Software"), to deal
-  in the Software without restriction, including without limitation the rights
-  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-  copies of the Software, and to permit persons to whom the Software is
-  furnished to do so, subject to the following conditions:
-
-  The above copyright notice and this permission notice shall be included in all
-  copies or substantial portions of the Software.
-
-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-  SOFTWARE.
-
-  */
-
-  'use strict';
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _assert = _interopRequire(_framptonUtilsAssert);
-
-  var _curryN = _interopRequire(_framptonUtilsCurry_n);
-
-  var _isString = _interopRequire(_framptonUtilsIs_string);
-
-  var _isNumber = _interopRequire(_framptonUtilsIs_number);
-
-  var _isBoolean = _interopRequire(_framptonUtilsIs_boolean);
-
-  var _isObject = _interopRequire(_framptonUtilsIs_object);
-
-  var _isFunction = _interopRequire(_framptonUtilsIs_function);
-
-  var _isArray = _interopRequire(_framptonUtilsIs_array);
-
-  var mapConstrToFn = function mapConstrToFn(group, constr) {
-    return constr === String ? _isString : constr === Number ? _isNumber : constr === Boolean ? _isBoolean : constr === Object ? _isObject : constr === Array ? _isArray : constr === Function ? _isFunction : constr === undefined ? group : constr;
-  };
-
-  function Constructor(group, name, validators) {
-    return (0, _curryN)(validators.length, function () {
-      var val = [],
-          validator,
-          i,
-          v;
-      for (i = 0; i < arguments.length; ++i) {
-        v = arguments[i];
-        validator = mapConstrToFn(group, validators[i]);
-        if (typeof validator === 'function' && validator(v) || v !== undefined && v !== null && v.of === validator) {
-          val[i] = v;
-        } else {
-          throw new TypeError('wrong value ' + v + ' passed to location ' + i + ' in ' + name);
-        }
-      }
-      val.of = group;
-      val.name = name;
-      return val;
-    });
-  }
-
-  function rawCase(type, cases, action, arg) {
-    (0, _assert)('wrong type passed to case', type !== action.of);
-    var name = action.name in cases ? action.name : '_' in cases ? '_' : undefined;
-    if (name === undefined) {
-      throw new Error('unhandled value passed to case');
-    } else {
-      return cases[name].apply(undefined, arg !== undefined ? action.concat([arg]) : action);
-    }
-  }
-
-  var typeCase = (0, _curryN)(3, rawCase);
-  var caseOn = (0, _curryN)(4, rawCase);
-
-  function Type(desc) {
-    var obj = {};
-    for (var key in desc) {
-      obj[key] = Constructor(obj, key, desc[key]);
-    }
-    obj['case'] = typeCase(obj);
-    obj.caseOn = caseOn(obj);
-    return obj;
-  }
-
-  module.exports = Type;
-});
-define('frampton-data/when', ['exports', 'module', 'frampton-data/task'], function (exports, module, _framptonDataTask) {
-  'use strict';
-
-  //+ when :: [Task x a] -> Task x [a]
-  module.exports = when;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _Task = _interopRequire(_framptonDataTask);
-
-  function when() {
-    for (var _len = arguments.length, tasks = Array(_len), _key = 0; _key < _len; _key++) {
-      tasks[_key] = arguments[_key];
-    }
-
-    return new _Task(function (reject, resolve) {
-
-      var valueArray = new Array(tasks.length);
-      var errorArray = [];
-      var len = tasks.length;
-      var idx = 0;
-      var count = 0;
-
-      function logError(err) {
-        errorArray.push(err);
-      }
-
-      tasks.forEach(function (task) {
-        var index = idx++;
-        task.run(logError, function (val) {
-          count = count + 1;
-          valueArray[index] = val;
-          if (count === len) {
-            resolve.apply(null, valueArray);
-          }
-        });
-      });
-    });
-  }
-});
 define('frampton-events', ['exports', 'frampton/namespace', 'frampton-events/listen', 'frampton-events/contains', 'frampton-events/event_target', 'frampton-events/event_value', 'frampton-events/get_position', 'frampton-events/get_position_relative', 'frampton-events/has_selector', 'frampton-events/contains_selector', 'frampton-events/selector_contains', 'frampton-events/closest_to_event'], function (exports, _framptonNamespace, _framptonEventsListen, _framptonEventsContains, _framptonEventsEvent_target, _framptonEventsEvent_value, _framptonEventsGet_position, _framptonEventsGet_position_relative, _framptonEventsHas_selector, _framptonEventsContains_selector, _framptonEventsSelector_contains, _framptonEventsClosest_to_event) {
   'use strict';
 
@@ -1666,449 +1024,6 @@ define('frampton-events/selector_contains', ['exports', 'module', 'frampton-util
     return (0, _isSomething)((0, _closestToEvent)(selector, evt));
   });
 });
-define('frampton-history', ['exports', 'frampton/namespace', 'frampton-history/push_state', 'frampton-history/replace_state', 'frampton-history/history_change', 'frampton-history/state', 'frampton-history/search', 'frampton-history/hash', 'frampton-history/path'], function (exports, _framptonNamespace, _framptonHistoryPush_state, _framptonHistoryReplace_state, _framptonHistoryHistory_change, _framptonHistoryState, _framptonHistorySearch, _framptonHistoryHash, _framptonHistoryPath) {
-  'use strict';
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _Frampton = _interopRequire(_framptonNamespace);
-
-  var _pushState = _interopRequire(_framptonHistoryPush_state);
-
-  var _replaceState = _interopRequire(_framptonHistoryReplace_state);
-
-  var _change = _interopRequire(_framptonHistoryHistory_change);
-
-  var _state = _interopRequire(_framptonHistoryState);
-
-  var _search = _interopRequire(_framptonHistorySearch);
-
-  var _hash = _interopRequire(_framptonHistoryHash);
-
-  var _path = _interopRequire(_framptonHistoryPath);
-
-  /**
-   * @name History
-   * @namespace
-   * @memberof Frampton
-   */
-  _Frampton.History = {};
-  _Frampton.History.pushState = _pushState;
-  _Frampton.History.replaceState = _replaceState;
-  _Frampton.History.state = _state;
-  _Frampton.History.hash = _hash;
-  _Frampton.History.path = _path;
-  _Frampton.History.search = _search;
-  _Frampton.History.change = _change;
-});
-define("frampton-history/depth", ["exports", "module"], function (exports, module) {
-  // How many items in history stack?
-  "use strict";
-
-  module.exports = depth;
-
-  function depth() {}
-});
-define("frampton-history/get_history", ["exports", "module"], function (exports, module) {
-  "use strict";
-
-  module.exports = get_history;
-
-  function get_history() {
-    return window.history;
-  }
-});
-define("frampton-history/get_location", ["exports", "module"], function (exports, module) {
-  "use strict";
-
-  module.exports = get_location;
-
-  function get_location() {
-    return window.location;
-  }
-});
-define('frampton-history/hash', ['exports', 'module', 'frampton-signals/stepper', 'frampton-history/get_location', 'frampton-history/hash_stream'], function (exports, module, _framptonSignalsStepper, _framptonHistoryGet_location, _framptonHistoryHash_stream) {
-  'use strict';
-
-  /**
-   * A Behavior representing the current location.hash
-   *
-   * @name hash
-   * @method
-   * @memberof Frampton.History
-   * @returns {Frampton.Signals.Behavior}
-   */
-  module.exports = hash;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _stepper = _interopRequire(_framptonSignalsStepper);
-
-  var _location = _interopRequire(_framptonHistoryGet_location);
-
-  var _hashStream = _interopRequire(_framptonHistoryHash_stream);
-
-  var instance = null;
-  function hash() {
-    if (!instance) {
-      instance = (0, _stepper)((0, _location)().hash, (0, _hashStream)());
-    }
-    return instance;
-  }
-});
-define('frampton-history/hash_stream', ['exports', 'module', 'frampton-history/location_stream'], function (exports, module, _framptonHistoryLocation_stream) {
-  'use strict';
-
-  /**
-   * @name hashStream
-   * @method
-   * @private
-   * @memberof Frampton.History
-   * @returns {Frampton.Signals.EventStream}
-   */
-  module.exports = hash_stream;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _locationStream = _interopRequire(_framptonHistoryLocation_stream);
-
-  var instance = null;
-  function hash_stream() {
-    if (!instance) {
-      instance = (0, _locationStream)().map(function (loc) {
-        return loc.hash.replace('#', '');
-      });
-    }
-    return instance;
-  }
-});
-define('frampton-history/history_change', ['exports', 'module', 'frampton-history/history_stream'], function (exports, module, _framptonHistoryHistory_stream) {
-  'use strict';
-
-  /**
-   * @name historyChange
-   * @method
-   * @memberof Frampton.History
-   * @param {Function} fn A function to call when history changes
-   * @return {Function} A function to unsubscribe from changes
-   */
-  module.exports = history_change;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _historyStream = _interopRequire(_framptonHistoryHistory_stream);
-
-  function history_change(fn) {
-    return (0, _historyStream)().next(fn);
-  }
-});
-define('frampton-history/history_stream', ['exports', 'module', 'frampton-utils/is_nothing', 'frampton-events/listen'], function (exports, module, _framptonUtilsIs_nothing, _framptonEventsListen) {
-  'use strict';
-
-  /**
-   * @name historyStream
-   * @method
-   * @private
-   * @memberof Frampton.History
-   * @returns {Frampton.Signals.EventStream}
-   */
-  module.exports = history_stream;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _isNothing = _interopRequire(_framptonUtilsIs_nothing);
-
-  var instance = null;
-  function history_stream() {
-
-    if (!window.history || !window.history.pushState) {
-      throw new Error('History API is not supported by this browser');
-    }
-
-    if ((0, _isNothing)(instance)) {
-      instance = (0, _framptonEventsListen.listen)('popstate', window);
-    }
-
-    return instance;
-  }
-});
-define('frampton-history/location_stream', ['exports', 'module', 'frampton-history/history_stream'], function (exports, module, _framptonHistoryHistory_stream) {
-  'use strict';
-
-  /**
-   * @name locationStream
-   * @method
-   * @private
-   * @memberof Frampton.History
-   * @returns {Frampton.Signals.EventStream}
-   */
-  module.exports = location_stream;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _historyStream = _interopRequire(_framptonHistoryHistory_stream);
-
-  var instance = null;
-  function location_stream() {
-    if (!instance) {
-      instance = (0, _historyStream)().map(function (evt) {
-        return evt.target.location;
-      });
-    }
-    return instance;
-  }
-});
-define('frampton-history/parse_search', ['exports', 'module', 'frampton-utils/memoize', 'frampton-io/http/query_unescape'], function (exports, module, _framptonUtilsMemoize, _framptonIoHttpQuery_unescape) {
-  'use strict';
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _memoize = _interopRequire(_framptonUtilsMemoize);
-
-  var _queryUnescape = _interopRequire(_framptonIoHttpQuery_unescape);
-
-  function validPair(pair) {
-    return pair.length === 2 && pair[0] !== '' && pair[1] !== '';
-  }
-
-  /**
-   * Takes a URL query string and returns a hash of key/values
-   * @name parseSearch
-   * @method
-   * @private
-   * @memberof Frampton.History
-   * @param {String} search Query string to parse
-   * @returns {Object}
-   */
-  module.exports = (0, _memoize)(function parse_search(search) {
-    var obj = {};
-    var parts = search.replace('?', '').split('&');
-    parts.forEach(function (part) {
-      var pair = part.split('=');
-      // check we have a properly-formed key/value pair.
-      if (validPair(pair)) {
-        obj[(0, _queryUnescape)(pair[0])] = (0, _queryUnescape)(pair[1]);
-      }
-    });
-    return obj;
-  });
-});
-define('frampton-history/path', ['exports', 'module', 'frampton-signals/stepper', 'frampton-history/get_location', 'frampton-history/path_stream'], function (exports, module, _framptonSignalsStepper, _framptonHistoryGet_location, _framptonHistoryPath_stream) {
-  'use strict';
-
-  /**
-   * A Behavior representing the current location.pathname
-   *
-   * @name path
-   * @method
-   * @memberof Frampton.History
-   * @returns {Frampton.Signals.Behavior}
-   */
-  module.exports = path;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _stepper = _interopRequire(_framptonSignalsStepper);
-
-  var _location = _interopRequire(_framptonHistoryGet_location);
-
-  var _pathStream = _interopRequire(_framptonHistoryPath_stream);
-
-  var instance = null;
-  function path() {
-    if (!instance) {
-      instance = (0, _stepper)((0, _location)().pathname, (0, _pathStream)());
-    }
-    return instance;
-  }
-});
-define('frampton-history/path_stream', ['exports', 'module', 'frampton-history/location_stream'], function (exports, module, _framptonHistoryLocation_stream) {
-  'use strict';
-
-  module.exports = path_stream;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _locationStream = _interopRequire(_framptonHistoryLocation_stream);
-
-  var instance = null;
-
-  function path_stream() {
-    if (!instance) {
-      instance = (0, _locationStream)().map(function (loc) {
-        return loc.pathname;
-      });
-    }
-    return instance;
-  }
-});
-define('frampton-history/push_state', ['exports', 'module', 'frampton-history/get_history', 'frampton-history/with_valid_state'], function (exports, module, _framptonHistoryGet_history, _framptonHistoryWith_valid_state) {
-  'use strict';
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _history = _interopRequire(_framptonHistoryGet_history);
-
-  var _withValidState = _interopRequire(_framptonHistoryWith_valid_state);
-
-  module.exports = (0, _withValidState)(function push_state(state) {
-    (0, _history)().pushState(state, state.name, state.path);
-  });
-});
-define('frampton-history/replace_state', ['exports', 'module', 'frampton-history/get_history', 'frampton-history/with_valid_state'], function (exports, module, _framptonHistoryGet_history, _framptonHistoryWith_valid_state) {
-  'use strict';
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _history = _interopRequire(_framptonHistoryGet_history);
-
-  var _withValidState = _interopRequire(_framptonHistoryWith_valid_state);
-
-  module.exports = (0, _withValidState)(function replace_state(state) {
-    (0, _history)().replaceState(state, state.name, state.path);
-  });
-});
-define('frampton-history/search', ['exports', 'module', 'frampton-signals/stepper', 'frampton-history/get_location', 'frampton-history/search_stream', 'frampton-history/parse_search'], function (exports, module, _framptonSignalsStepper, _framptonHistoryGet_location, _framptonHistorySearch_stream, _framptonHistoryParse_search) {
-  'use strict';
-
-  /**
-   * A Behavior representing the current location.search
-   *
-   * @name search
-   * @method
-   * @memberof Frampton.History
-   * @returns {Frampton.Signals.Behavior}
-   */
-  module.exports = search;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _stepper = _interopRequire(_framptonSignalsStepper);
-
-  var _location = _interopRequire(_framptonHistoryGet_location);
-
-  var _searchStream = _interopRequire(_framptonHistorySearch_stream);
-
-  var _parseSearch = _interopRequire(_framptonHistoryParse_search);
-
-  var instance = null;
-  function search() {
-    if (!instance) {
-      instance = (0, _stepper)((0, _parseSearch)((0, _location)().search || ''), (0, _searchStream)());
-    }
-    return instance;
-  }
-});
-define('frampton-history/search_stream', ['exports', 'module', 'frampton-history/location_stream', 'frampton-history/parse_search'], function (exports, module, _framptonHistoryLocation_stream, _framptonHistoryParse_search) {
-  'use strict';
-
-  /**
-   * @name searchStream
-   * @method
-   * @private
-   * @memberof Frampton.History
-   * @returns {Frampton.Signals.EventStream}
-   */
-  module.exports = hash_stream;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _locationStream = _interopRequire(_framptonHistoryLocation_stream);
-
-  var _parseSearch = _interopRequire(_framptonHistoryParse_search);
-
-  var instance = null;
-  function hash_stream() {
-    if (!instance) {
-      instance = (0, _locationStream)().map(function (loc) {
-        return (0, _parseSearch)(loc.search || '');
-      });
-    }
-    return instance;
-  }
-});
-define('frampton-history/state', ['exports', 'module', 'frampton-signals/stepper', 'frampton-history/get_history', 'frampton-history/state_stream'], function (exports, module, _framptonSignalsStepper, _framptonHistoryGet_history, _framptonHistoryState_stream) {
-  'use strict';
-
-  /**
-   * A Behavior representing the current history.state
-   *
-   * @name state
-   * @method
-   * @memberof Frampton.History
-   * @returns {Frampton.Signals.Behavior}
-   */
-  module.exports = state;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _stepper = _interopRequire(_framptonSignalsStepper);
-
-  var _history = _interopRequire(_framptonHistoryGet_history);
-
-  var _stateStream = _interopRequire(_framptonHistoryState_stream);
-
-  var instance = null;
-  function state() {
-    if (!instance) {
-      instance = (0, _stepper)((0, _history)().state, (0, _stateStream)());
-    }
-    return instance;
-  }
-});
-define('frampton-history/state_stream', ['exports', 'module', 'frampton-utils/get', 'frampton-history/history_stream'], function (exports, module, _framptonUtilsGet, _framptonHistoryHistory_stream) {
-  'use strict';
-
-  /**
-   * @name stateStream
-   * @method
-   * @private
-   * @memberof Frampton.History
-   * @returns {Frampton.Signals.EventStream}
-   */
-  module.exports = state_stream;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _get = _interopRequire(_framptonUtilsGet);
-
-  var _historyStream = _interopRequire(_framptonHistoryHistory_stream);
-
-  var instance = null;
-  function state_stream() {
-    if (!instance) {
-      instance = (0, _historyStream)().map((0, _get)('state'));
-    }
-    return instance;
-  }
-});
-define("frampton-history/valid_state", ["exports", "module"], function (exports, module) {
-  "use strict";
-
-  module.exports = valid_state;
-
-  function valid_state(state) {
-    return !!(state.name && state.path);
-  }
-});
-define('frampton-history/with_valid_state', ['exports', 'module', 'frampton-utils/assert', 'frampton-history/valid_state'], function (exports, module, _framptonUtilsAssert, _framptonHistoryValid_state) {
-  'use strict';
-
-  module.exports = with_valid_state;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _assert = _interopRequire(_framptonUtilsAssert);
-
-  var _validState = _interopRequire(_framptonHistoryValid_state);
-
-  function with_valid_state(fn) {
-    return function (state) {
-      (0, _assert)('State not valid', (0, _validState)(state));
-      fn(state);
-    };
-  }
-});
 define('frampton-html', ['exports', 'frampton/namespace', 'frampton-html/contains', 'frampton-html/element_value', 'frampton-html/data'], function (exports, _framptonNamespace, _framptonHtmlContains, _framptonHtmlElement_value, _framptonHtmlData) {
   'use strict';
 
@@ -2132,16 +1047,29 @@ define('frampton-html', ['exports', 'frampton/namespace', 'frampton-html/contain
   _Frampton.Html.elementValue = _elementValue;
   _Frampton.Html.data = _data;
 });
-define('frampton-html/contains', ['exports', 'module', 'frampton-utils/curry'], function (exports, module, _framptonUtilsCurry) {
+define('frampton-html/contains', ['exports', 'module', 'frampton-utils/curry', 'frampton-utils/is_function'], function (exports, module, _framptonUtilsCurry, _framptonUtilsIs_function) {
   'use strict';
 
   function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
 
   var _curry = _interopRequire(_framptonUtilsCurry);
 
+  var _isFunction = _interopRequire(_framptonUtilsIs_function);
+
   // contains :: Dom -> Dom -> Boolean
   module.exports = (0, _curry)(function contains(parent, child) {
-    return parent === child || parent.contains(child);
+    if (parent === child) {
+      return true;
+    } else if ((0, _isFunction)(parent.contains)) {
+      return parent.contains(child);
+    } else {
+      while (child = child.parentNode) {
+        if (parent === child) {
+          return true;
+        }
+        return false;
+      }
+    }
   });
 });
 define('frampton-html/data', ['exports', 'module', 'frampton-utils/curry'], function (exports, module, _framptonUtilsCurry) {
@@ -2161,8 +1089,8 @@ define("frampton-html/element_value", ["exports", "module"], function (exports, 
    * elementValue :: Object -> Any
    *
    * @name elementValue
+   * @method
    * @memberof Frampton.Html
-   * @static
    * @param {Object} element
    * @returns {*}
    */
@@ -2184,904 +1112,6 @@ define('frampton-html/set_html', ['exports', 'module', 'frampton-utils/curry'], 
   module.exports = (0, _curry)(function set_html(element, html) {
     element.innerHTML = html;
   });
-});
-define('frampton-io', ['exports', 'frampton/namespace', 'frampton-io/response', 'frampton-io/complete', 'frampton-io/progress', 'frampton-io/error', 'frampton-io/start', 'frampton-io/http/send', 'frampton-io/http/get', 'frampton-io/http/get_newest', 'frampton-io/http/post', 'frampton-io/http/upload', 'frampton-io/http/url', 'frampton-io/http/query_pair', 'frampton-io/http/query_escape', 'frampton-io/http/uri_encode', 'frampton-io/http/uri_decode', 'frampton-io/file/read', 'frampton-io/file/data_url', 'frampton-io/file/binary_string', 'frampton-io/file/array_buffer', 'frampton-io/file/text'], function (exports, _framptonNamespace, _framptonIoResponse, _framptonIoComplete, _framptonIoProgress, _framptonIoError, _framptonIoStart, _framptonIoHttpSend, _framptonIoHttpGet, _framptonIoHttpGet_newest, _framptonIoHttpPost, _framptonIoHttpUpload, _framptonIoHttpUrl, _framptonIoHttpQuery_pair, _framptonIoHttpQuery_escape, _framptonIoHttpUri_encode, _framptonIoHttpUri_decode, _framptonIoFileRead, _framptonIoFileData_url, _framptonIoFileBinary_string, _framptonIoFileArray_buffer, _framptonIoFileText) {
-  'use strict';
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _Frampton = _interopRequire(_framptonNamespace);
-
-  var _Response = _interopRequire(_framptonIoResponse);
-
-  var _complete = _interopRequire(_framptonIoComplete);
-
-  var _progress = _interopRequire(_framptonIoProgress);
-
-  var _error = _interopRequire(_framptonIoError);
-
-  var _start = _interopRequire(_framptonIoStart);
-
-  var _send = _interopRequire(_framptonIoHttpSend);
-
-  var _get = _interopRequire(_framptonIoHttpGet);
-
-  var _getNewest = _interopRequire(_framptonIoHttpGet_newest);
-
-  var _post = _interopRequire(_framptonIoHttpPost);
-
-  var _upload = _interopRequire(_framptonIoHttpUpload);
-
-  var _url = _interopRequire(_framptonIoHttpUrl);
-
-  var _queryPair = _interopRequire(_framptonIoHttpQuery_pair);
-
-  var _queryEscape = _interopRequire(_framptonIoHttpQuery_escape);
-
-  var _uriEncode = _interopRequire(_framptonIoHttpUri_encode);
-
-  var _uriDecode = _interopRequire(_framptonIoHttpUri_decode);
-
-  var _read = _interopRequire(_framptonIoFileRead);
-
-  var _dataUrl = _interopRequire(_framptonIoFileData_url);
-
-  var _binaryString = _interopRequire(_framptonIoFileBinary_string);
-
-  var _arrayBuffer = _interopRequire(_framptonIoFileArray_buffer);
-
-  var _text = _interopRequire(_framptonIoFileText);
-
-  /**
-   * @name IO
-   * @namespace
-   * @memberof Frampton
-   */
-  _Frampton.IO = {};
-
-  _Frampton.IO.Response = _Response;
-  _Frampton.IO.complete = _complete;
-  _Frampton.IO.progress = _progress;
-  _Frampton.IO.error = _error;
-  _Frampton.IO.start = _start;
-
-  /**
-   * @name Http
-   * @memberof Frampton.IO
-   * @namespace
-   */
-  _Frampton.IO.Http = {};
-  _Frampton.IO.Http.send = _send;
-  _Frampton.IO.Http.get = _get;
-  _Frampton.IO.Http.post = _post;
-  _Frampton.IO.Http.getNewest = _getNewest;
-  _Frampton.IO.Http.upload = _upload;
-  _Frampton.IO.Http.url = _url;
-  _Frampton.IO.Http.queryPair = _queryPair;
-  _Frampton.IO.Http.queryEscape = _queryEscape;
-  _Frampton.IO.Http.uriEncode = _uriEncode;
-  _Frampton.IO.Http.uriDecode = _uriDecode;
-
-  /**
-   * @name File
-   * @memberof Frampton.IO
-   * @namespace
-   */
-  _Frampton.IO.File = {};
-  _Frampton.IO.File.read = _read;
-  _Frampton.IO.File.dataUrl = _dataUrl;
-  _Frampton.IO.File.binaryString = _binaryString;
-  _Frampton.IO.File.arrayBuffer = _arrayBuffer;
-  _Frampton.IO.File.text = _text;
-});
-define('frampton-io/complete', ['exports', 'module', 'frampton-utils/get', 'frampton-io/is_complete'], function (exports, module, _framptonUtilsGet, _framptonIoIs_complete) {
-  'use strict';
-
-  //+ complete :: EventStream Respose -> EventStream Any
-  module.exports = complete;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _get = _interopRequire(_framptonUtilsGet);
-
-  var _isComplete = _interopRequire(_framptonIoIs_complete);
-
-  function complete(stream) {
-    return stream.filter(_isComplete).map((0, _get)('data'));
-  }
-});
-define('frampton-io/error', ['exports', 'module', 'frampton-io/is_error'], function (exports, module, _framptonIoIs_error) {
-  'use strict';
-
-  //+ error :: EventStream Respose -> EventStream Response
-  module.exports = error;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _isError = _interopRequire(_framptonIoIs_error);
-
-  function error(stream) {
-    return stream.filter(_isError);
-  }
-});
-define('frampton-io/file/array_buffer', ['exports', 'module', 'frampton-io/file/read'], function (exports, module, _framptonIoFileRead) {
-  'use strict';
-
-  module.exports = array_buffer;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _read = _interopRequire(_framptonIoFileRead);
-
-  function array_buffer(file) {
-    return (0, _read)('ARRAY_BUFFER', file);
-  }
-});
-define('frampton-io/file/binary_string', ['exports', 'module', 'frampton-io/file/read'], function (exports, module, _framptonIoFileRead) {
-  'use strict';
-
-  module.exports = binary_string;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _read = _interopRequire(_framptonIoFileRead);
-
-  function binary_string(file) {
-    return (0, _read)('BINARY_STRING', file);
-  }
-});
-define('frampton-io/file/data_url', ['exports', 'module', 'frampton-io/file/read'], function (exports, module, _framptonIoFileRead) {
-  'use strict';
-
-  module.exports = data_url;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _read = _interopRequire(_framptonIoFileRead);
-
-  function data_url(file) {
-    return (0, _read)('DATA_URL', file);
-  }
-});
-define('frampton-io/file/read', ['exports', 'module', 'frampton-signals/event_stream', 'frampton-signals/event', 'frampton-io/response', 'frampton-io/file/read_api'], function (exports, module, _framptonSignalsEvent_stream, _framptonSignalsEvent, _framptonIoResponse, _framptonIoFileRead_api) {
-  'use strict';
-
-  // read_file :: Object -> File -> EventStream Response
-  module.exports = read_file;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _EventStream = _interopRequire(_framptonSignalsEvent_stream);
-
-  var _Response = _interopRequire(_framptonIoResponse);
-
-  var _ReadApi = _interopRequire(_framptonIoFileRead_api);
-
-  function read_file(method, file) {
-
-    return new _EventStream(function seed_read_file(sink) {
-
-      var reader = (0, _ReadApi)();
-
-      reader.addEventListener('loadstart', function (evt) {
-        sink((0, _framptonSignalsEvent.nextEvent)((0, _Response)('start', 0, null)));
-      });
-
-      reader.addEventListener('progress', function (evt) {
-        sink((0, _framptonSignalsEvent.nextEvent)((0, _Response)('progress', evt.loaded / evt.total, null)));
-      });
-
-      reader.addEventListener('load', function (evt) {
-        sink((0, _framptonSignalsEvent.nextEvent)((0, _Response)('complete', 1, evt.target.result)));
-      });
-
-      reader.addEventListener('error', function (err) {
-        sink((0, _framptonSignalsEvent.errorEvent)((0, _Response)('error', 0, err.message)));
-      });
-
-      reader.addEventListener('abort', function (evt) {
-        sink((0, _framptonSignalsEvent.errorEvent)((0, _Response)('abort', 0, null)));
-      });
-
-      switch (method) {
-        case 'DATA_URL':
-          reader.readAsDataURL(file);
-          break;
-
-        case 'ARRAY_BUFFER':
-          reader.readAsArrayBuffer(file);
-          break;
-
-        case 'TEXT':
-          reader.readAsText(file);
-          break;
-
-        case 'BINARY_STRING':
-          reader.readAsBinaryString(file);
-          break;
-      }
-    });
-  }
-});
-define('frampton-io/file/read_api', ['exports', 'module', 'frampton/namespace', 'frampton-utils/apply'], function (exports, module, _framptonNamespace, _framptonUtilsApply) {
-  'use strict';
-
-  module.exports = ajax;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _Frampton = _interopRequire(_framptonNamespace);
-
-  var _apply = _interopRequire(_framptonUtilsApply);
-
-  function MockReader() {
-    this.listeners = {};
-    this.readTime = Math.random() * 3000 + 300;
-    this.progress = 0;
-  }
-
-  MockReader.prototype.timeout = 10000;
-
-  MockReader.prototype.read = function () {
-    var _this = this;
-
-    this.progressInterval = setInterval(function () {
-      if (_this.listeners['progress']) {
-        _this.listeners['progress'].forEach(function (next) {
-          _this.progress += 15;
-          next({
-            loaded: _this.progress / _this.readTime * 500,
-            total: 500
-          });
-        });
-      }
-    }, 20);
-
-    setTimeout(function () {
-
-      if (_this.progressInterval) {
-        clearInterval(_this.progressInterval);
-        _this.progressInterval = null;
-      }
-
-      if (_this.listeners['load']) {
-        _this.listeners['load'].forEach(function (next) {
-          next({
-            target: {
-              result: 'test'
-            }
-          });
-        });
-      }
-    }, this.readTime);
-
-    if (this.listeners['start']) {
-      this.listeners['start'].forEach(_apply);
-    }
-  };
-
-  MockReader.prototype.addEventListener = function (name, callback) {
-
-    if (!this.listeners[name]) {
-      this.listeners[name] = [];
-    }
-
-    if (this.listeners[name].indexOf(callback) === -1) {
-      this.listeners[name].push(callback);
-    }
-  };
-
-  MockReader.prototype.readAsDataURL = function (file) {
-    this.read(file);
-  };
-
-  MockReader.prototype.readAsArrayBuffer = function (file) {
-    this.read(file);
-  };
-
-  MockReader.prototype.readAsText = function (file) {
-    this.read(file);
-  };
-
-  MockReader.prototype.readAsBinaryString = function (file) {
-    this.read(file);
-  };
-
-  function ajax() {
-    if (_Frampton.isTest()) {
-      return new MockReader();
-    } else {
-      return new FileReader();
-    }
-  }
-});
-define('frampton-io/file/text', ['exports', 'module', 'frampton-io/file/read'], function (exports, module, _framptonIoFileRead) {
-  'use strict';
-
-  module.exports = text;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _read = _interopRequire(_framptonIoFileRead);
-
-  function text(file) {
-    return (0, _read)('TEXT', file);
-  }
-});
-define('frampton-io/http/ajax_api', ['exports', 'module', 'frampton/namespace', 'frampton-utils/apply'], function (exports, module, _framptonNamespace, _framptonUtilsApply) {
-  'use strict';
-
-  /**
-   * Returns either an instance of XMLHttpRequest or a mock instance if in testing mode.
-   *
-   * @name ajaxApi
-   * @method
-   * @memberof Frampton.IO.Http
-   * @returns {Object} Instance of XMLHttpRequest for current environment
-   */
-  module.exports = ajax_api;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _Frampton = _interopRequire(_framptonNamespace);
-
-  var _apply = _interopRequire(_framptonUtilsApply);
-
-  function MockAjax() {
-    this.listeners = {};
-    this.headers = {};
-    this.requestTime = Math.random() * 1000 + 300;
-    this.progress = 0;
-  }
-
-  MockAjax.prototype.timeout = 10000;
-
-  MockAjax.prototype.open = function (method, url) {};
-
-  MockAjax.prototype.send = function () {
-    var _this = this;
-
-    this.progressInterval = setInterval(function () {
-      if (_this.listeners['progress']) {
-        _this.listeners['progress'].forEach(function (next) {
-          _this.progress += 15;
-          next({
-            loaded: _this.progress / _this.requestTime * 500,
-            total: 500
-          });
-        });
-      }
-    }, 20);
-
-    setTimeout(function () {
-
-      if (_this.progressInterval) {
-        clearInterval(_this.progressInterval);
-        _this.progressInterval = null;
-      }
-
-      if (_this.listeners['load']) {
-        _this.listeners['load'].forEach(function (next) {
-          next({
-            target: {
-              response: 'test'
-            },
-            total: 500,
-            loaded: 500
-          });
-        });
-      }
-    }, this.requestTime);
-
-    if (this.listeners['start']) {
-      this.listeners['start'].forEach(_apply);
-    }
-  };
-
-  MockAjax.prototype.addEventListener = function (name, callback) {
-
-    if (!this.listeners[name]) {
-      this.listeners[name] = [];
-    }
-
-    if (this.listeners[name].indexOf(callback) === -1) {
-      this.listeners[name].push(callback);
-    }
-  };
-
-  MockAjax.prototype.setRequestHeader = function (key, value) {
-    this.headers[key] = value;
-  };
-  function ajax_api() {
-    if (_Frampton.isTest()) {
-      return new MockAjax();
-    } else {
-      return new XMLHttpRequest();
-    }
-  }
-});
-define('frampton-io/http/get', ['exports', 'module', 'frampton-io/http/request', 'frampton-io/http/url', 'frampton-io/http/send'], function (exports, module, _framptonIoHttpRequest, _framptonIoHttpUrl, _framptonIoHttpSend) {
-  'use strict';
-
-  /**
-   * Perform an AJAX GET request and return an EventStream that reports the progress.
-   *
-   * @name get
-   * @method
-   * @memberof Frampton.IO.Http
-   * @param {String} url    Url to send request to
-   * @param {Object} [data] Data to send with request. Is encoded and appended to url.
-   * @returns {Frampton.Signals.EventStream} An EventStream of Response objects
-   */
-  module.exports = get;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _Request = _interopRequire(_framptonIoHttpRequest);
-
-  var _urlBuilder = _interopRequire(_framptonIoHttpUrl);
-
-  var _send = _interopRequire(_framptonIoHttpSend);
-
-  function get(url, data) {
-    return (0, _send)(null, (0, _Request)((0, _urlBuilder)(url, data)));
-  }
-});
-define('frampton-io/http/get_newest', ['exports', 'module', 'frampton-io/http/get'], function (exports, module, _framptonIoHttpGet) {
-  'use strict';
-
-  // get_newest :: EventStream Url -> EventStream Response
-  module.exports = get_newest;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _get = _interopRequire(_framptonIoHttpGet);
-
-  function get_newest(source) {
-    return source.chainLatest(function (url) {
-      return (0, _get)(url);
-    });
-  }
-});
-define('frampton-io/http/index', ['exports', 'frampton/namespace', 'frampton-http/send', 'frampton-http/get', 'frampton-http/get_newest', 'frampton-http/post', 'frampton-http/put', 'frampton-http/patch', 'frampton-http/upload', 'frampton-http/complete', 'frampton-http/progress', 'frampton-http/error', 'frampton-http/start', 'frampton-http/url', 'frampton-http/query_pair', 'frampton-http/query_escape', 'frampton-io/http/uri_encode', 'frampton-io/http/uri_decode'], function (exports, _framptonNamespace, _framptonHttpSend, _framptonHttpGet, _framptonHttpGet_newest, _framptonHttpPost, _framptonHttpPut, _framptonHttpPatch, _framptonHttpUpload, _framptonHttpComplete, _framptonHttpProgress, _framptonHttpError, _framptonHttpStart, _framptonHttpUrl, _framptonHttpQuery_pair, _framptonHttpQuery_escape, _framptonIoHttpUri_encode, _framptonIoHttpUri_decode) {
-  'use strict';
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _Frampton = _interopRequire(_framptonNamespace);
-
-  var _send = _interopRequire(_framptonHttpSend);
-
-  var _get = _interopRequire(_framptonHttpGet);
-
-  var _getNewest = _interopRequire(_framptonHttpGet_newest);
-
-  var _post = _interopRequire(_framptonHttpPost);
-
-  var _put = _interopRequire(_framptonHttpPut);
-
-  var _patch = _interopRequire(_framptonHttpPatch);
-
-  var _upload = _interopRequire(_framptonHttpUpload);
-
-  var _complete = _interopRequire(_framptonHttpComplete);
-
-  var _progress = _interopRequire(_framptonHttpProgress);
-
-  var _error = _interopRequire(_framptonHttpError);
-
-  var _start = _interopRequire(_framptonHttpStart);
-
-  var _url = _interopRequire(_framptonHttpUrl);
-
-  var _queryPair = _interopRequire(_framptonHttpQuery_pair);
-
-  var _queryEscape = _interopRequire(_framptonHttpQuery_escape);
-
-  var _uriEncode = _interopRequire(_framptonIoHttpUri_encode);
-
-  var _uriDecode = _interopRequire(_framptonIoHttpUri_decode);
-
-  _Frampton.Http = {};
-  _Frampton.Http.send = _send;
-  _Frampton.Http.get = _get;
-  _Frampton.Http.post = _post;
-  _Frampton.Http.put = _put;
-  _Frampton.Http.patch = _patch;
-  _Frampton.Http.getNewest = _getNewest;
-  _Frampton.Http.upload = _upload;
-  _Frampton.Http.complete = _complete;
-  _Frampton.Http.progress = _progress;
-  _Frampton.Http.error = _error;
-  _Frampton.Http.start = _start;
-  _Frampton.Http.url = _url;
-  _Frampton.Http.queryPair = _queryPair;
-  _Frampton.Http.queryEscape = _queryEscape;
-  _Frampton.Http.uriEncode = _uriEncode;
-  _Frampton.Http.uriDecode = _uriDecode;
-});
-define('frampton-io/http/patch', ['exports', 'module', 'frampton-utils/curry', 'frampton-io/http/request', 'frampton-io/http/send'], function (exports, module, _framptonUtilsCurry, _framptonIoHttpRequest, _framptonIoHttpSend) {
-  'use strict';
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _curry = _interopRequire(_framptonUtilsCurry);
-
-  var _Request = _interopRequire(_framptonIoHttpRequest);
-
-  var _send = _interopRequire(_framptonIoHttpSend);
-
-  /**
-   * Perform an AJAX PATCH request and return an EventStream that reports the progress.
-   *
-   * @name patch
-   * @method
-   * @memberof Frampton.IO.Http
-   * @param {String} url  Url to send request to
-   * @param {Object} data Data to send with request
-   * @returns {Frampton.Signals.EventStream} An EventStream of Response objects
-   */
-  module.exports = (0, _curry)(function patch(url, data) {
-    return (0, _send)(null, (0, _Request)(url, 'PATCH', data || null));
-  });
-});
-define('frampton-io/http/post', ['exports', 'module', 'frampton-utils/curry', 'frampton-io/http/request', 'frampton-io/http/send'], function (exports, module, _framptonUtilsCurry, _framptonIoHttpRequest, _framptonIoHttpSend) {
-  'use strict';
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _curry = _interopRequire(_framptonUtilsCurry);
-
-  var _Request = _interopRequire(_framptonIoHttpRequest);
-
-  var _send = _interopRequire(_framptonIoHttpSend);
-
-  /**
-   * Perform an AJAX POST request and return an EventStream that reports the progress.
-   *
-   * @name post
-   * @method
-   * @memberof Frampton.IO.Http
-   * @param {String} url  Url to send request to
-   * @param {Object} data Data to send with request
-   * @returns {Frampton.Signals.EventStream} An EventStream of Response objects
-   */
-  module.exports = (0, _curry)(function post(url, data) {
-    return (0, _send)(null, (0, _Request)(url, 'POST', data || null));
-  });
-});
-define('frampton-io/http/put', ['exports', 'module', 'frampton-utils/curry', 'frampton-io/http/request', 'frampton-io/http/send'], function (exports, module, _framptonUtilsCurry, _framptonIoHttpRequest, _framptonIoHttpSend) {
-  'use strict';
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _curry = _interopRequire(_framptonUtilsCurry);
-
-  var _Request = _interopRequire(_framptonIoHttpRequest);
-
-  var _send = _interopRequire(_framptonIoHttpSend);
-
-  /**
-   * Perform an AJAX PUT request and return an EventStream that reports the progress.
-   *
-   * @name put
-   * @method
-   * @memberof Frampton.IO.Http
-   * @param {String} url  Url to send request to
-   * @param {Object} data Data to send with request
-   * @returns {Frampton.Signals.EventStream} An EventStream of Response objects
-   */
-  module.exports = (0, _curry)(function put(url, data) {
-    return (0, _send)(null, (0, _Request)(url, 'PUT', data || null));
-  });
-});
-define('frampton-io/http/query_escape', ['exports', 'module', 'frampton-utils/memoize', 'frampton-io/http/uri_encode', 'frampton-string/join', 'frampton-string/split'], function (exports, module, _framptonUtilsMemoize, _framptonIoHttpUri_encode, _framptonStringJoin, _framptonStringSplit) {
-  'use strict';
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _memoize = _interopRequire(_framptonUtilsMemoize);
-
-  var _uriEncode = _interopRequire(_framptonIoHttpUri_encode);
-
-  var _join = _interopRequire(_framptonStringJoin);
-
-  var _split = _interopRequire(_framptonStringSplit);
-
-  module.exports = (0, _memoize)(function query_escape(str) {
-    return (0, _join)('+', (0, _split)('%20', (0, _uriEncode)(str)));
-  });
-});
-define('frampton-io/http/query_pair', ['exports', 'module', 'frampton-io/http/query_escape'], function (exports, module, _framptonIoHttpQuery_escape) {
-  'use strict';
-
-  // query_pair :: [String, String] -> String
-  module.exports = query_pair;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _queryEscape = _interopRequire(_framptonIoHttpQuery_escape);
-
-  function query_pair(pair) {
-    return (0, _queryEscape)(pair[0]) + '=' + (0, _queryEscape)(pair[1]);
-  }
-});
-define('frampton-io/http/query_unescape', ['exports', 'module', 'frampton-utils/memoize', 'frampton-io/http/uri_decode', 'frampton-string/join', 'frampton-string/split'], function (exports, module, _framptonUtilsMemoize, _framptonIoHttpUri_decode, _framptonStringJoin, _framptonStringSplit) {
-  'use strict';
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _memoize = _interopRequire(_framptonUtilsMemoize);
-
-  var _uriDecode = _interopRequire(_framptonIoHttpUri_decode);
-
-  var _join = _interopRequire(_framptonStringJoin);
-
-  var _split = _interopRequire(_framptonStringSplit);
-
-  module.exports = (0, _memoize)(function query_unescape(str) {
-    return (0, _join)(' ', (0, _split)('+', (0, _uriDecode)(str)));
-  });
-});
-define('frampton-io/http/request', ['exports', 'module'], function (exports, module) {
-  /**
-   * @name Request
-   * @method
-   * @memberof Frampton.IO.Http
-   * @param {String} url            Url to send request to.
-   * @param {String} [method='GET'] Http request method to use
-   * @param {Object} [data=null]    Data to send with request
-   * @param {Object} [headers={}]   Headers to add to request
-   * @returns {Object}
-   */
-  'use strict';
-
-  module.exports = Request;
-
-  function Request(url, method, data, headers) {
-    return {
-      url: url,
-      method: method || 'GET',
-      body: data || null,
-      headers: headers || {}
-    };
-  }
-});
-define('frampton-io/http/send', ['exports', 'module', 'frampton-utils/extend', 'frampton-signals/event_stream', 'frampton-signals/event', 'frampton-io/http/ajax_api', 'frampton-io/response'], function (exports, module, _framptonUtilsExtend, _framptonSignalsEvent_stream, _framptonSignalsEvent, _framptonIoHttpAjax_api, _framptonIoResponse) {
-  'use strict';
-
-  /**
-   * Perform an AJAX request and return an EventStream that reports the progress.
-   *
-   * @name send
-   * @method
-   * @memberof Frampton.IO.Http
-   * @param {Object} settings A hash of general settings for the request
-   * @param {Object} request  A hash describing the request to be made
-   * @returns {Frampton.Signals.EventStream} An EventStream of Response objects
-   */
-  module.exports = send;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _extend = _interopRequire(_framptonUtilsExtend);
-
-  var _EventStream = _interopRequire(_framptonSignalsEvent_stream);
-
-  var _AjaxApi = _interopRequire(_framptonIoHttpAjax_api);
-
-  var _Response = _interopRequire(_framptonIoResponse);
-
-  var defaultSettings = {
-    timeout: 10 * 1000
-  };
-  function send(settings, request) {
-
-    return new _EventStream(function seed_send(sink) {
-
-      var req = (0, _AjaxApi)();
-      settings = (0, _extend)({}, defaultSettings, settings);
-
-      req.open(request.method, request.url, true);
-
-      req.addEventListener('loadStart', function (evt) {
-        sink((0, _framptonSignalsEvent.nextEvent)((0, _Response)('start', 0, null)));
-      });
-
-      req.addEventListener('progress', function (evt) {
-        sink((0, _framptonSignalsEvent.nextEvent)((0, _Response)('progress', evt.loaded / evt.total, null)));
-      });
-
-      req.addEventListener('error', function (err) {
-        sink((0, _framptonSignalsEvent.errorEvent)(err.message || 'ajax error'));
-      });
-
-      req.addEventListener('timeout', function (err) {
-        sink((0, _framptonSignalsEvent.errorEvent)(err.message || 'timeout'));
-      });
-
-      req.addEventListener('load', function (evt) {
-        var response;
-        try {
-          response = JSON.parse(evt.target.response);
-        } catch (e) {
-          response = evt.target.response;
-        }
-        sink((0, _framptonSignalsEvent.nextEvent)((0, _Response)('complete', 1, response)));
-      });
-
-      for (var key in request.headers) {
-        req.setRequestHeader(key, request.headers[key]);
-      }
-
-      req.timeout = settings.timeout;
-
-      req.send(request.body);
-    });
-  }
-});
-define('frampton-io/http/upload', ['exports', 'module', 'frampton-utils/curry', 'frampton-io/http/post'], function (exports, module, _framptonUtilsCurry, _framptonIoHttpPost) {
-  'use strict';
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _curry = _interopRequire(_framptonUtilsCurry);
-
-  var _post = _interopRequire(_framptonIoHttpPost);
-
-  module.exports = (0, _curry)(function upload(url, file) {
-    var formData = new FormData();
-    formData.append('file-0', file);
-    return (0, _post)(url, formData);
-  });
-});
-define('frampton-io/http/upload_many', ['exports', 'module', 'frampton-utils/curry', 'frampton-io/http/post'], function (exports, module, _framptonUtilsCurry, _framptonIoHttpPost) {
-  'use strict';
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _curry = _interopRequire(_framptonUtilsCurry);
-
-  var _post = _interopRequire(_framptonIoHttpPost);
-
-  module.exports = (0, _curry)(function upload(url, files) {
-    var formData = new FormData();
-    for (var i = 0; i < files.length; i++) {
-      formData.append('file-' + i, files[i]);
-    }
-    return (0, _post)(url, formData);
-  });
-});
-define('frampton-io/http/uri_decode', ['exports', 'module', 'frampton-utils/memoize'], function (exports, module, _framptonUtilsMemoize) {
-  'use strict';
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _memoize = _interopRequire(_framptonUtilsMemoize);
-
-  module.exports = (0, _memoize)(function uri_decode(str) {
-    return decodeURIComponent(str);
-  });
-});
-define('frampton-io/http/uri_encode', ['exports', 'module', 'frampton-utils/memoize'], function (exports, module, _framptonUtilsMemoize) {
-  'use strict';
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _memoize = _interopRequire(_framptonUtilsMemoize);
-
-  module.exports = (0, _memoize)(function uri_encode(str) {
-    return encodeURIComponent(str);
-  });
-});
-define('frampton-io/http/url', ['exports', 'module', 'frampton-utils/curry', 'frampton-string/join', 'frampton-object/as_list', 'frampton-io/http/query_pair'], function (exports, module, _framptonUtilsCurry, _framptonStringJoin, _framptonObjectAs_list, _framptonIoHttpQuery_pair) {
-  'use strict';
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _curry = _interopRequire(_framptonUtilsCurry);
-
-  var _join = _interopRequire(_framptonStringJoin);
-
-  var _asList = _interopRequire(_framptonObjectAs_list);
-
-  var _queryPair = _interopRequire(_framptonIoHttpQuery_pair);
-
-  /**
-   * url_builder :: String -> Object -> String
-   *
-   * @name url
-   * @method
-   * @memberof Frampton.IO.Http
-   * @param {String} domain
-   * @param {Object} args
-   * @returns {String}
-   */
-  module.exports = (0, _curry)(function url_builder(domain, args) {
-    if (!args) return domain;
-    return domain + '?' + (0, _join)('&', (0, _asList)(args).map(_queryPair));
-  });
-});
-define('frampton-io/is_complete', ['exports', 'module'], function (exports, module) {
-  //+ is_complete :: Response -> Boolean
-  'use strict';
-
-  module.exports = is_complete;
-
-  function is_complete(response) {
-    return response && response.status === 'complete';
-  }
-});
-define('frampton-io/is_error', ['exports', 'module'], function (exports, module) {
-  //+ is_error :: Response -> Boolean
-  'use strict';
-
-  module.exports = is_error;
-
-  function is_error(response) {
-    return response && response.status === 'error';
-  }
-});
-define('frampton-io/is_start', ['exports', 'module'], function (exports, module) {
-  //+ is_start :: Response -> Boolean
-  'use strict';
-
-  module.exports = is_start;
-
-  function is_start(response) {
-    return response && response.status === 'start';
-  }
-});
-define('frampton-io/progress', ['exports', 'module', 'frampton-utils/get'], function (exports, module, _framptonUtilsGet) {
-  'use strict';
-
-  //+ progress :: EventStream Response -> EventStream Number
-  module.exports = progress;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _get = _interopRequire(_framptonUtilsGet);
-
-  function progress(stream) {
-    return stream.map((0, _get)('progress'));
-  }
-});
-define("frampton-io/response", ["exports", "module"], function (exports, module) {
-  /**
-   * @name Response
-   * @method
-   * @memberof Frampton.IO
-   * @param {String} status       Current status of request
-   * @param {Number} [progress=0] Current progress (0-1) of request
-   * @param {Object} [data=null]  Data returned by request
-   * @returns {Object}
-   */
-  "use strict";
-
-  module.exports = Response;
-
-  function Response(status, progress, data) {
-    return {
-      status: status,
-      progress: progress || 0,
-      complete: progress === 1,
-      data: data || null
-    };
-  }
-});
-define('frampton-io/start', ['exports', 'module', 'frampton-io/is_start'], function (exports, module, _framptonIoIs_start) {
-  'use strict';
-
-  //+ start :: EventStream Respose -> EventStream Response
-  module.exports = start;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _isStart = _interopRequire(_framptonIoIs_start);
-
-  function start(stream) {
-    return stream.filter(_isStart);
-  }
 });
 define('frampton-keyboard', ['exports', 'frampton/namespace', 'frampton-keyboard/keyboard', 'frampton-keyboard/key_code', 'frampton-keyboard/is_key', 'frampton-keyboard/is_enter', 'frampton-keyboard/is_esc', 'frampton-keyboard/is_up', 'frampton-keyboard/is_down', 'frampton-keyboard/is_left', 'frampton-keyboard/is_right', 'frampton-keyboard/is_space', 'frampton-keyboard/is_ctrl', 'frampton-keyboard/is_shift'], function (exports, _framptonNamespace, _framptonKeyboardKeyboard, _framptonKeyboardKey_code, _framptonKeyboardIs_key, _framptonKeyboardIs_enter, _framptonKeyboardIs_esc, _framptonKeyboardIs_up, _framptonKeyboardIs_down, _framptonKeyboardIs_left, _framptonKeyboardIs_right, _framptonKeyboardIs_space, _framptonKeyboardIs_ctrl, _framptonKeyboardIs_shift) {
   'use strict';
@@ -4185,7 +2215,16 @@ define('frampton-monad/ap', ['exports', 'module', 'frampton-utils/curry'], funct
 
   var _curry = _interopRequire(_framptonUtilsCurry);
 
-  //+ ap(<*>) :: (a -> b) -> Monad a -> Monad b
+  /**
+   * ap(<*>) :: (a -> b) -> Monad a -> Monad b
+   *
+   * @name ap
+   * @method
+   * @memberof Frampton.Monad
+   * @param {Function} fn
+   * @param {Object} monad
+   * @returns {Object}
+   */
   module.exports = (0, _curry)(function curried_ap(fn, monad) {
     return monad.ap(fn);
   });
@@ -4197,7 +2236,16 @@ define('frampton-monad/chain', ['exports', 'module', 'frampton-utils/curry'], fu
 
   var _curry = _interopRequire(_framptonUtilsCurry);
 
-  //+ chain(>>=) :: Monad a -> Monad b -> Monad b
+  /**
+   * chain(>>=) :: Monad a -> Monad b -> Monad b
+   *
+   * @name chain
+   * @method
+   * @memberof Frampton.Monad
+   * @param {Object} monad1
+   * @param {Object} monad2
+   * @returns {Object}
+   */
   module.exports = (0, _curry)(function curried_ap(monad1, monad2) {
     return monad1.chain(monad2);
   });
@@ -4209,7 +2257,16 @@ define('frampton-monad/filter', ['exports', 'module', 'frampton-utils/curry'], f
 
   var _curry = _interopRequire(_framptonUtilsCurry);
 
-  //+ filter :: (a -> b) -> Monad a -> Monad b
+  /**
+   * filter :: (a -> b) -> Monad a -> Monad b
+   *
+   * @name filter
+   * @method
+   * @memberof Frampton.Monad
+   * @param {Function} predicate
+   * @param {Object} monad
+   * @returns {Object}
+   */
   module.exports = (0, _curry)(function curried_filter(predicate, monad) {
     return monad.filter(predicate);
   });
@@ -4221,7 +2278,16 @@ define('frampton-monad/map', ['exports', 'module', 'frampton-utils/curry'], func
 
   var _curry = _interopRequire(_framptonUtilsCurry);
 
-  //+ map :: (a -> b) -> Monad a -> Monad b
+  /**
+   * map :: (a -> b) -> Monad a -> Monad b
+   *
+   * @name map
+   * @method
+   * @memberof Frampton.Monad
+   * @param {Function} mapping
+   * @param {Object} monad
+   * @returns {Object}
+   */
   module.exports = (0, _curry)(function curried_map(mapping, monad) {
     return monad.map(mapping);
   });
@@ -4284,7 +2350,7 @@ define('frampton-mouse/mouse', ['exports', 'module', 'frampton-signals/stepper',
     }
   }
 });
-define('frampton-object', ['exports', 'frampton/namespace', 'frampton-object/filter', 'frampton-object/reduce', 'frampton-object/map', 'frampton-object/merge', 'frampton-object/for_each', 'frampton-object/as_list', 'frampton-object/copy'], function (exports, _framptonNamespace, _framptonObjectFilter, _framptonObjectReduce, _framptonObjectMap, _framptonObjectMerge, _framptonObjectFor_each, _framptonObjectAs_list, _framptonObjectCopy) {
+define('frampton-object', ['exports', 'frampton/namespace', 'frampton-object/filter', 'frampton-object/reduce', 'frampton-object/map', 'frampton-object/merge', 'frampton-object/for_each', 'frampton-object/as_list', 'frampton-object/copy', 'frampton-object/update'], function (exports, _framptonNamespace, _framptonObjectFilter, _framptonObjectReduce, _framptonObjectMap, _framptonObjectMerge, _framptonObjectFor_each, _framptonObjectAs_list, _framptonObjectCopy, _framptonObjectUpdate) {
   'use strict';
 
   function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
@@ -4305,6 +2371,8 @@ define('frampton-object', ['exports', 'frampton/namespace', 'frampton-object/fil
 
   var _copy = _interopRequire(_framptonObjectCopy);
 
+  var _update = _interopRequire(_framptonObjectUpdate);
+
   /**
    * @name Object
    * @namespace
@@ -4312,6 +2380,7 @@ define('frampton-object', ['exports', 'frampton/namespace', 'frampton-object/fil
    */
   _Frampton.Object = {};
   _Frampton.Object.copy = _copy;
+  _Frampton.Object.update = _update;
   _Frampton.Object.filter = _filter;
   _Frampton.Object.reduce = _reduce;
   _Frampton.Object.map = _map;
@@ -4338,6 +2407,15 @@ define('frampton-object/as_list', ['exports', 'module', 'frampton-object/reduce'
 define('frampton-object/copy', ['exports', 'module', 'frampton-object/for_each'], function (exports, module, _framptonObjectFor_each) {
   'use strict';
 
+  /**
+   * copy :: Object -> Object
+   *
+   * @name copy
+   * @method
+   * @memberof Frampton.Object
+   * @param {Object} obj object to copy
+   * @returns {Object}
+   */
   module.exports = copy_object;
 
   function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
@@ -4439,6 +2517,38 @@ define('frampton-object/reduce', ['exports', 'module', 'frampton-utils/curry', '
 
     return acc;
   });
+});
+define('frampton-object/update', ['exports', 'module', 'frampton-object/for_each'], function (exports, module, _framptonObjectFor_each) {
+  'use strict';
+
+  /**
+   * update :: Object -> String -> Any -> Object
+   *
+   * @name update
+   * @method
+   * @memberof Frampton.Object
+   * @param {Object} obj object to copy
+   * @param {String} k   name of key to update
+   * @param {*}      v   value to update key to
+   * @returns {Object}
+   */
+  module.exports = update_object;
+
+  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
+
+  var _forEach = _interopRequire(_framptonObjectFor_each);
+
+  function update_object(obj, k, v) {
+    var newObj = {};
+    (0, _forEach)(function (value, key) {
+      if (key === v) {
+        newObj[key] = v;
+      } else {
+        newObj[key] = value;
+      }
+    }, obj);
+    return newObj;
+  }
 });
 define('frampton-signals', ['exports', 'frampton/namespace', 'frampton-signals/event_stream', 'frampton-signals/behavior', 'frampton-signals/empty', 'frampton-signals/delayed', 'frampton-signals/interval', 'frampton-signals/sequential', 'frampton-signals/null', 'frampton-signals/send', 'frampton-signals/once', 'frampton-signals/changes', 'frampton-signals/stepper', 'frampton-signals/accum_b', 'frampton-signals/swap', 'frampton-signals/toggle', 'frampton-signals/map', 'frampton-signals/map2', 'frampton-signals/map3', 'frampton-signals/map4', 'frampton-signals/map5', 'frampton-signals/map_many', 'frampton-signals/event'], function (exports, _framptonNamespace, _framptonSignalsEvent_stream, _framptonSignalsBehavior, _framptonSignalsEmpty, _framptonSignalsDelayed, _framptonSignalsInterval, _framptonSignalsSequential, _framptonSignalsNull, _framptonSignalsSend, _framptonSignalsOnce, _framptonSignalsChanges, _framptonSignalsStepper, _framptonSignalsAccum_b, _framptonSignalsSwap, _framptonSignalsToggle, _framptonSignalsMap, _framptonSignalsMap2, _framptonSignalsMap3, _framptonSignalsMap4, _framptonSignalsMap5, _framptonSignalsMap_many, _framptonSignalsEvent) {
   'use strict';
@@ -4545,7 +2655,7 @@ define('frampton-signals/accum_b', ['exports', 'module', 'frampton-utils/curry',
     });
   });
 });
-define('frampton-signals/behavior', ['exports', 'module', 'frampton-utils/assert', 'frampton-utils/guid', 'frampton-utils/noop', 'frampton-utils/is_defined', 'frampton-utils/equal', 'frampton-utils/lazy', 'frampton-list/contains', 'frampton-list/remove'], function (exports, module, _framptonUtilsAssert, _framptonUtilsGuid, _framptonUtilsNoop, _framptonUtilsIs_defined, _framptonUtilsEqual, _framptonUtilsLazy, _framptonListContains, _framptonListRemove) {
+define('frampton-signals/behavior', ['exports', 'module', 'frampton-utils/assert', 'frampton-utils/guid', 'frampton-utils/noop', 'frampton-utils/is_defined', 'frampton-utils/lazy', 'frampton-list/contains', 'frampton-list/remove'], function (exports, module, _framptonUtilsAssert, _framptonUtilsGuid, _framptonUtilsNoop, _framptonUtilsIs_defined, _framptonUtilsLazy, _framptonListContains, _framptonListRemove) {
   'use strict';
 
   function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
@@ -4557,8 +2667,6 @@ define('frampton-signals/behavior', ['exports', 'module', 'frampton-utils/assert
   var _noop = _interopRequire(_framptonUtilsNoop);
 
   var _isDefined = _interopRequire(_framptonUtilsIs_defined);
-
-  var _equal = _interopRequire(_framptonUtilsEqual);
 
   var _lazy = _interopRequire(_framptonUtilsLazy);
 
@@ -4638,7 +2746,7 @@ define('frampton-signals/behavior', ['exports', 'module', 'frampton-utils/assert
    * @returns {Frampton.Signals.Behavior}
    */
   Behavior.prototype.update = function Behavior_update(val) {
-    if (!(0, _equal)(val, this.value)) {
+    if (val !== this.value) {
       this.value = val;
       updateListeners(this);
     }
@@ -5619,6 +3727,8 @@ define('frampton-signals/event_stream', ['exports', 'frampton-utils/apply', 'fra
   /**
    * map :: EventStream a -> (a -> b) -> EventStream b
    *
+   * Maps the values on this EventStream with the given function.
+   *
    * @name map
    * @method
    * @memberof Frampton.Signals.EventStream#
@@ -5635,9 +3745,11 @@ define('frampton-signals/event_stream', ['exports', 'frampton-utils/apply', 'fra
   /**
    * recover :: EventStream a -> (err -> a) -> EventStream a
    *
+   * Maps an ErrorEvent to a NextEvent if the EventStream gets an error.
+   *
    * @name recover
    * @method
-   * @memberof! EventStream.prototype
+   * @memberof EventStream.Signals.EventStream#
    * @param {Function} mapping A function to map an error to a value
    * @returns {Frampton.Signals.EventStream}
    */
@@ -5699,6 +3811,7 @@ define('frampton-signals/event_stream', ['exports', 'frampton-utils/apply', 'fra
 
   /**
    * scan :: EventStream a -> b -> (a -> b) -> Behavior b
+   *
    * @name scan
    * @method
    * @memberof Frampton.Signals.EventStream#
@@ -5712,6 +3825,7 @@ define('frampton-signals/event_stream', ['exports', 'frampton-utils/apply', 'fra
 
   /**
    * sample :: EventStream a -> Behavior b -> EventStream b
+   *
    * @name sample
    * @method
    * @memberof Frampton.Signals.EventStream#
@@ -5739,6 +3853,7 @@ define('frampton-signals/event_stream', ['exports', 'frampton-utils/apply', 'fra
 
   /**
    * fold :: EventStream a -> (a -> s -> s) -> s -> EventStream s
+   *
    * @name fold
    * @method
    * @memberof Frampton.Signals.EventStream#
@@ -5759,6 +3874,7 @@ define('frampton-signals/event_stream', ['exports', 'frampton-utils/apply', 'fra
 
   /**
    * withPrevious :: EventStream a -> EventStream a
+   *
    * @name withPrevious
    * @method
    * @memberof Frampton.Signals.EventStream#
@@ -5775,9 +3891,12 @@ define('frampton-signals/event_stream', ['exports', 'frampton-utils/apply', 'fra
 
   /**
    * take :: EventStream a -> Number n -> EventStream a
+   *
    * @name take
    * @method
    * @memberof Frampton.Signals.EventStream#
+   * @param {Number} limit The number of events to take
+   * @returns {Frampton.Signals.EventStream}
    */
   EventStream.prototype.take = function EventStream_take(limit) {
 
@@ -5811,9 +3930,15 @@ define('frampton-signals/event_stream', ['exports', 'frampton-utils/apply', 'fra
 
   /**
    * takeWhile :: EventStream a -> (a -> Boolean) -> EventStream a
+   *
+   * Takes events from the EventStream whitle the function returns true. Once
+   * it returns false the stream is closed.
+   *
    * @name takeWhile
    * @method
    * @memberof Frampton.Signals.EventStream#
+   * @param {Function} predicate A function to test against.
+   * @returns {Frampton.Signals.EventStream}
    */
   EventStream.prototype.takeWhile = function EventStream_takeWhile(predicate) {
 
@@ -5845,6 +3970,8 @@ define('frampton-signals/event_stream', ['exports', 'frampton-utils/apply', 'fra
   };
 
   /**
+   * Take the first event off an EventStream
+   *
    * @name first
    * @method
    * @memberof Frampton.Signals.EventStream#
@@ -5935,6 +4062,7 @@ define('frampton-signals/event_stream', ['exports', 'frampton-utils/apply', 'fra
 
   /**
    * debounce :: EventStream a -> Number -> EventStream a
+   *
    * @name debounce
    * @method
    * @memberof Frampton.Signals.EventStream#
@@ -6109,8 +4237,10 @@ define('frampton-signals/event_stream', ['exports', 'frampton-utils/apply', 'fra
   EventStream.prototype.preventDefault = function EventStream_preventDefault() {
     return withTransform(this, function (event) {
       return event.map(function (evt) {
-        evt.preventDefault();
-        evt.stopPropagation();
+        if ((0, _isFunction)(evt.preventDefault) && (0, _isFunction)(evt.stopPropagation)) {
+          evt.preventDefault();
+          evt.stopPropagation();
+        }
         return evt;
       });
     });
@@ -6458,12 +4588,16 @@ define('frampton-signals/toggle', ['exports', 'module', 'frampton-utils/curry', 
     });
   });
 });
-define('frampton-string', ['exports', 'frampton/namespace', 'frampton-string/join', 'frampton-string/split', 'frampton-string/lines', 'frampton-string/words', 'frampton-string/starts_with', 'frampton-string/ends_with', 'frampton-string/contains', 'frampton-string/capitalize', 'frampton-string/dash_to_camel', 'frampton-string/length', 'frampton-string/normalize_newline'], function (exports, _framptonNamespace, _framptonStringJoin, _framptonStringSplit, _framptonStringLines, _framptonStringWords, _framptonStringStarts_with, _framptonStringEnds_with, _framptonStringContains, _framptonStringCapitalize, _framptonStringDash_to_camel, _framptonStringLength, _framptonStringNormalize_newline) {
+define('frampton-string', ['exports', 'frampton/namespace', 'frampton-string/replace', 'frampton-string/trim', 'frampton-string/join', 'frampton-string/split', 'frampton-string/lines', 'frampton-string/words', 'frampton-string/starts_with', 'frampton-string/ends_with', 'frampton-string/contains', 'frampton-string/capitalize', 'frampton-string/dash_to_camel', 'frampton-string/length', 'frampton-string/normalize_newline'], function (exports, _framptonNamespace, _framptonStringReplace, _framptonStringTrim, _framptonStringJoin, _framptonStringSplit, _framptonStringLines, _framptonStringWords, _framptonStringStarts_with, _framptonStringEnds_with, _framptonStringContains, _framptonStringCapitalize, _framptonStringDash_to_camel, _framptonStringLength, _framptonStringNormalize_newline) {
   'use strict';
 
   function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
 
   var _Frampton = _interopRequire(_framptonNamespace);
+
+  var _replace = _interopRequire(_framptonStringReplace);
+
+  var _trim = _interopRequire(_framptonStringTrim);
 
   var _join = _interopRequire(_framptonStringJoin);
 
@@ -6493,6 +4627,8 @@ define('frampton-string', ['exports', 'frampton/namespace', 'frampton-string/joi
    * @memberof Frampton
    */
   _Frampton.String = {};
+  _Frampton.String.replace = _replace;
+  _Frampton.String.trim = _trim;
   _Frampton.String.join = _join;
   _Frampton.String.split = _split;
   _Frampton.String.lines = _lines;
@@ -6549,6 +4685,15 @@ define('frampton-string/ends_with', ['exports', 'module', 'frampton-utils/curry'
     return str.length >= sub.length && str.lastIndexOf(sub) === str.length - sub.length;
   });
 });
+define('frampton-string/is_empty', ['exports', 'module'], function (exports, module) {
+  'use strict';
+
+  module.exports = is_empty;
+
+  function is_empty(str) {
+    return str.trim() === '';
+  }
+});
 define('frampton-string/join', ['exports', 'module', 'frampton-utils/curry'], function (exports, module, _framptonUtilsCurry) {
   'use strict';
 
@@ -6556,7 +4701,15 @@ define('frampton-string/join', ['exports', 'module', 'frampton-utils/curry'], fu
 
   var _curry = _interopRequire(_framptonUtilsCurry);
 
-  // join :: String -> Array String -> String
+  /**
+   * join :: String -> Array String -> String
+   * @name join
+   * @method
+   * @memberof Frampton.String
+   * @param {String} sep
+   * @param {Array} strs
+   * @returns {String}
+   */
   module.exports = (0, _curry)(function join(sep, strs) {
     return strs.join(sep);
   });
@@ -6614,6 +4767,27 @@ define('frampton-string/normalize_newline', ['exports', 'module'], function (exp
     return str.replace(/\r\n/g, '\n');
   }
 });
+define('frampton-string/replace', ['exports', 'module', 'frampton-utils/curry'], function (exports, module, _framptonUtilsCurry) {
+  'use strict';
+
+  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
+
+  var _curry = _interopRequire(_framptonUtilsCurry);
+
+  /**
+   * replace :: String -> String -> String -> String
+   * @name replace
+   * @method
+   * @memberof Frampton.String
+   * @param {String} newSubStr
+   * @param {String} oldSubStr
+   * @param {String} str
+   * @returns {String}
+   */
+  module.exports = (0, _curry)(function replace(newSubStr, oldSubStr, str) {
+    return str.replace(oldSubStr, newSubStr);
+  });
+});
 define('frampton-string/split', ['exports', 'module', 'frampton-utils/curry'], function (exports, module, _framptonUtilsCurry) {
   'use strict';
 
@@ -6637,6 +4811,15 @@ define('frampton-string/starts_with', ['exports', 'module', 'frampton-utils/curr
   module.exports = (0, _curry)(function starts_with(sub, str) {
     return str.indexOf(sub) === 0;
   });
+});
+define("frampton-string/trim", ["exports", "module"], function (exports, module) {
+  "use strict";
+
+  module.exports = trim;
+
+  function trim(str) {
+    return str.trim();
+  }
 });
 define("frampton-string/words", ["exports", "module"], function (exports, module) {
   // words :: String -> Array String
@@ -7042,71 +5225,7 @@ define('frampton-style/supported_props', ['exports', 'module', 'frampton-style/s
     return obj;
   }
 });
-define('frampton-ui', ['exports', 'frampton/namespace', 'frampton-ui/input'], function (exports, _framptonNamespace, _framptonUiInput) {
-  'use strict';
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _Frampton = _interopRequire(_framptonNamespace);
-
-  var _Input = _interopRequire(_framptonUiInput);
-
-  /**
-   * @name UI
-   * @namespace
-   * @memberof Frampton
-   */
-  _Frampton.UI = {};
-  _Frampton.UI.Input = _Input;
-});
-define('frampton-ui/input', ['exports', 'module', 'frampton-signals/stepper', 'frampton-events/event_value', 'frampton-events/listen', 'frampton-string/length'], function (exports, module, _framptonSignalsStepper, _framptonEventsEvent_value, _framptonEventsListen, _framptonStringLength) {
-  'use strict';
-
-  module.exports = ui_input;
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _stepper = _interopRequire(_framptonSignalsStepper);
-
-  var _eventValue = _interopRequire(_framptonEventsEvent_value);
-
-  var _length = _interopRequire(_framptonStringLength);
-
-  function ui_input(element) {
-
-    var tagName = element.tagName.toLowerCase();
-    var localInputs = (0, _framptonEventsListen.listen)('input', element);
-    var localChanges = (0, _framptonEventsListen.listen)('change', element);
-    var localBlurs = (0, _framptonEventsListen.listen)('blur', element);
-    var localFocuses = (0, _framptonEventsListen.listen)('focus', element);
-    var focused = localBlurs.map(false).merge(localFocuses.map(true));
-    var values = localInputs.merge(localChanges).map(_eventValue);
-
-    var initialValue = (function () {
-      switch (tagName) {
-        case 'input':
-        case 'select':
-        case 'textarea':
-          return element.value;
-        default:
-          var temp = element.querySelector('input, select, textarea');
-          return temp && temp.value ? temp.value : '';
-      }
-    })();
-
-    return {
-      element: element,
-      change: localChanges,
-      input: localInputs,
-      blur: localBlurs,
-      focus: localFocuses,
-      isFocused: (0, _stepper)(false, focused),
-      value: (0, _stepper)(initialValue, values),
-      length: (0, _stepper)(initialValue.length, values.map(_length))
-    };
-  }
-});
-define('frampton-utils', ['exports', 'frampton/namespace', 'frampton-utils/apply', 'frampton-utils/assert', 'frampton-utils/compose', 'frampton-utils/curry', 'frampton-utils/equal', 'frampton-utils/extend', 'frampton-utils/get', 'frampton-utils/has_length', 'frampton-utils/identity', 'frampton-utils/immediate', 'frampton-utils/is_array', 'frampton-utils/is_boolean', 'frampton-utils/is_defined', 'frampton-utils/is_empty', 'frampton-utils/is_equal', 'frampton-utils/is_function', 'frampton-utils/is_nothing', 'frampton-utils/is_null', 'frampton-utils/is_object', 'frampton-utils/is_promise', 'frampton-utils/is_something', 'frampton-utils/is_string', 'frampton-utils/is_undefined', 'frampton-utils/log', 'frampton-utils/lazy', 'frampton-utils/memoize', 'frampton-utils/noop', 'frampton-utils/not', 'frampton-utils/of_value', 'frampton-utils/safe_get'], function (exports, _framptonNamespace, _framptonUtilsApply, _framptonUtilsAssert, _framptonUtilsCompose, _framptonUtilsCurry, _framptonUtilsEqual, _framptonUtilsExtend, _framptonUtilsGet, _framptonUtilsHas_length, _framptonUtilsIdentity, _framptonUtilsImmediate, _framptonUtilsIs_array, _framptonUtilsIs_boolean, _framptonUtilsIs_defined, _framptonUtilsIs_empty, _framptonUtilsIs_equal, _framptonUtilsIs_function, _framptonUtilsIs_nothing, _framptonUtilsIs_null, _framptonUtilsIs_object, _framptonUtilsIs_promise, _framptonUtilsIs_something, _framptonUtilsIs_string, _framptonUtilsIs_undefined, _framptonUtilsLog, _framptonUtilsLazy, _framptonUtilsMemoize, _framptonUtilsNoop, _framptonUtilsNot, _framptonUtilsOf_value, _framptonUtilsSafe_get) {
+define('frampton-utils', ['exports', 'frampton/namespace', 'frampton-utils/apply', 'frampton-utils/assert', 'frampton-utils/compose', 'frampton-utils/curry', 'frampton-utils/equal', 'frampton-utils/extend', 'frampton-utils/get', 'frampton-utils/has_length', 'frampton-utils/identity', 'frampton-utils/immediate', 'frampton-utils/is_array', 'frampton-utils/is_boolean', 'frampton-utils/is_defined', 'frampton-utils/is_empty', 'frampton-utils/is_equal', 'frampton-utils/is_function', 'frampton-utils/is_nothing', 'frampton-utils/is_null', 'frampton-utils/is_object', 'frampton-utils/is_promise', 'frampton-utils/is_something', 'frampton-utils/is_string', 'frampton-utils/is_undefined', 'frampton-utils/log', 'frampton-utils/lazy', 'frampton-utils/memoize', 'frampton-utils/noop', 'frampton-utils/not', 'frampton-utils/of_value'], function (exports, _framptonNamespace, _framptonUtilsApply, _framptonUtilsAssert, _framptonUtilsCompose, _framptonUtilsCurry, _framptonUtilsEqual, _framptonUtilsExtend, _framptonUtilsGet, _framptonUtilsHas_length, _framptonUtilsIdentity, _framptonUtilsImmediate, _framptonUtilsIs_array, _framptonUtilsIs_boolean, _framptonUtilsIs_defined, _framptonUtilsIs_empty, _framptonUtilsIs_equal, _framptonUtilsIs_function, _framptonUtilsIs_nothing, _framptonUtilsIs_null, _framptonUtilsIs_object, _framptonUtilsIs_promise, _framptonUtilsIs_something, _framptonUtilsIs_string, _framptonUtilsIs_undefined, _framptonUtilsLog, _framptonUtilsLazy, _framptonUtilsMemoize, _framptonUtilsNoop, _framptonUtilsNot, _framptonUtilsOf_value) {
   'use strict';
 
   function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
@@ -7171,8 +5290,6 @@ define('frampton-utils', ['exports', 'frampton/namespace', 'frampton-utils/apply
 
   var _ofValue = _interopRequire(_framptonUtilsOf_value);
 
-  var _safeGet = _interopRequire(_framptonUtilsSafe_get);
-
   /**
    * @name Utils
    * @namespace
@@ -7208,7 +5325,6 @@ define('frampton-utils', ['exports', 'frampton/namespace', 'frampton-utils/apply
   _Frampton.Utils.noop = _noop;
   _Frampton.Utils.not = _not;
   _Frampton.Utils.ofValue = _ofValue;
-  _Frampton.Utils.safeGet = _safeGet;
 });
 define("frampton-utils/apply", ["exports", "module"], function (exports, module) {
   /**
@@ -7380,20 +5496,33 @@ define('frampton-utils/equal', ['exports', 'module', 'frampton-utils/is_object',
 
   function deep_equal(obj1, obj2) {
 
-    if (((0, _isObject)(obj1) || (0, _isArray)(obj1)) && ((0, _isObject)(obj1) || (0, _isArray)(obj1))) {
+    var depth = 0;
+    var original1 = obj1;
+    var original2 = obj2;
 
-      var key = null;
+    function _equal(obj1, obj2) {
 
-      for (key in obj1) {
-        if (!obj2 || !deep_equal(obj1[key], obj2[key])) {
-          return false;
+      depth++;
+
+      if (
+      // If we're dealing with a circular reference, return reference equality.
+      !(depth > 1 && original1 === obj1 && original2 === obj2) && ((0, _isObject)(obj1) || (0, _isArray)(obj1)) && ((0, _isObject)(obj2) || (0, _isArray)(obj2))) {
+
+        var key = null;
+
+        for (key in obj1) {
+          if (!obj2 || !_equal(obj1[key], obj2[key])) {
+            return false;
+          }
         }
-      }
 
-      return true;
-    } else {
-      return obj1 === obj2;
+        return true;
+      } else {
+        return obj1 === obj2;
+      }
     }
+
+    return _equal(obj1, obj2);
   }
 });
 define('frampton-utils/extend', ['exports', 'module', 'frampton-list/foldl'], function (exports, module, _framptonListFoldl) {
@@ -7593,7 +5722,9 @@ define('frampton-utils/is_defined', ['exports', 'module', 'frampton-utils/is_und
     return !(0, _isUndefined)(obj);
   }
 });
-define("frampton-utils/is_empty", ["exports", "module"], function (exports, module) {
+define('frampton-utils/is_empty', ['exports', 'module', 'frampton-utils/is_nothing'], function (exports, module, _framptonUtilsIs_nothing) {
+  'use strict';
+
   /**
    * Returns a boolean telling us if a given value doesn't exist or has length 0
    *
@@ -7603,12 +5734,14 @@ define("frampton-utils/is_empty", ["exports", "module"], function (exports, modu
    * @param {*} obj
    * @returns {Boolean}
    */
-  "use strict";
-
   module.exports = is_empty;
 
+  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
+
+  var _isNothing = _interopRequire(_framptonUtilsIs_nothing);
+
   function is_empty(obj) {
-    return !obj || !obj.length || 0 === obj.length;
+    return (0, _isNothing)(obj) || !obj.length || 0 === obj.length;
   }
 });
 define('frampton-utils/is_equal', ['exports', 'module', 'frampton-utils/curry'], function (exports, module, _framptonUtilsCurry) {
@@ -7958,29 +6091,6 @@ define("frampton-utils/of_value", ["exports", "module"], function (exports, modu
     };
   }
 });
-define('frampton-utils/safe_get', ['exports', 'module', 'frampton-utils/curry', 'frampton-utils/get', 'frampton-data/maybe'], function (exports, module, _framptonUtilsCurry, _framptonUtilsGet, _framptonDataMaybe) {
-  'use strict';
-
-  function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
-
-  var _curry = _interopRequire(_framptonUtilsCurry);
-
-  var _get = _interopRequire(_framptonUtilsGet);
-
-  /**
-   * safeGet :: String -> Object -> Maybe Any
-   *
-   * @name safeGet
-   * @method
-   * @memberof Frampton.Utils
-   * @param {String} prop
-   * @param {Object} obj
-   * @returns {Frampton.Data.Maybe}
-   */
-  module.exports = (0, _curry)(function safe_get(prop, obj) {
-    return _framptonDataMaybe.Maybe.of((0, _get)(prop, obj));
-  });
-});
 define('frampton-window', ['exports', 'frampton/namespace', 'frampton-window/window'], function (exports, _framptonNamespace, _framptonWindowWindow) {
   'use strict';
 
@@ -8053,7 +6163,7 @@ define('frampton-window/window', ['exports', 'module', 'frampton-signals/empty',
     };
   }
 });
-define('frampton', ['exports', 'module', 'frampton/namespace', 'frampton-utils', 'frampton-list', 'frampton-object', 'frampton-string', 'frampton-math', 'frampton-data', 'frampton-events', 'frampton-signals', 'frampton-mouse', 'frampton-keyboard', 'frampton-window', 'frampton-html', 'frampton-ui', 'frampton-io', 'frampton-style', 'frampton-history'], function (exports, module, _framptonNamespace, _framptonUtils, _framptonList, _framptonObject, _framptonString, _framptonMath, _framptonData, _framptonEvents, _framptonSignals, _framptonMouse, _framptonKeyboard, _framptonWindow, _framptonHtml, _framptonUi, _framptonIo, _framptonStyle, _framptonHistory) {
+define('frampton', ['exports', 'module', 'frampton/namespace', 'frampton-utils', 'frampton-list', 'frampton-object', 'frampton-string', 'frampton-math', 'frampton-events', 'frampton-signals', 'frampton-mouse', 'frampton-keyboard', 'frampton-window', 'frampton-html', 'frampton-style'], function (exports, module, _framptonNamespace, _framptonUtils, _framptonList, _framptonObject, _framptonString, _framptonMath, _framptonEvents, _framptonSignals, _framptonMouse, _framptonKeyboard, _framptonWindow, _framptonHtml, _framptonStyle) {
   'use strict';
 
   function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
@@ -8073,7 +6183,7 @@ define('frampton/namespace', ['exports', 'module'], function (exports, module) {
    */
   'use strict';
 
-  Frampton.VERSION = '0.0.5';
+  Frampton.VERSION = '0.0.12';
 
   Frampton.TEST = 'test';
 

@@ -1,7 +1,3 @@
-function confirm() {
-  return true;
-}
-
 /**
  * @name route
  * @method
@@ -13,9 +9,9 @@ function confirm() {
 export default function create_route(path, fn) {
   return {
     path : path,
-    fn : function(path, ...args) {
-      return fn.apply(null, [path]);
+    fn : function(...args) {
+      return fn.apply(null, args);
     },
-    _isRoute : confirm
+    _isRoute : true
   };
 }
