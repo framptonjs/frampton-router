@@ -44,7 +44,7 @@ define('frampton-history', ['exports', 'frampton/namespace', 'frampton-history/s
    * @memberof Frampton
    */
   _Frampton['default'].History = {};
-  _Frampton['default'].History.VERSION = '0.0.1';
+  _Frampton['default'].History.VERSION = '0.0.2';
   _Frampton['default'].History.pushState = _pushState['default'];
   _Frampton['default'].History.replaceState = _replaceState['default'];
   _Frampton['default'].History.setHash = _setHash['default'];
@@ -55,14 +55,14 @@ define('frampton-history', ['exports', 'frampton/namespace', 'frampton-history/s
   _Frampton['default'].History.search = _search['default'];
   _Frampton['default'].History.change = _change['default'];
 });
-define('frampton-history/depth', ['exports', 'module', 'frampton-signals/constant'], function (exports, module, _framptonSignalsConstant) {
+define('frampton-history/depth', ['exports', 'module', 'frampton-signal/create'], function (exports, module, _framptonSignalCreate) {
   'use strict';
 
   module.exports = depth;
 
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  var _constant = _interopRequireDefault(_framptonSignalsConstant);
+  var _create = _interopRequireDefault(_framptonSignalCreate);
 
   var instance = null;
 
@@ -72,103 +72,133 @@ define('frampton-history/depth', ['exports', 'module', 'frampton-signals/constan
    * @name depth
    * @method
    * @memberof Frampton.History
-   * @returns {Frampton.Signals.Behavior}
+   * @returns {Frampton.Signal.Signal}
    */
 
   function depth() {
     if (!instance) {
-      instance = _constant['default'](0);
+      instance = _create['default'](0);
     }
     return instance;
   }
 });
-define("frampton-history/get_history", ["exports", "module"], function (exports, module) {
-  "use strict";
-
-  module.exports = get_history;
-
-  function get_history() {
-    return window.history;
-  }
-});
-define("frampton-history/get_location", ["exports", "module"], function (exports, module) {
-  "use strict";
-
-  module.exports = get_location;
-
-  function get_location() {
-    return window.location;
-  }
-});
-define('frampton-history/hash', ['exports', 'module', 'frampton-signals/stepper', 'frampton-history/get_location', 'frampton-history/hash_stream'], function (exports, module, _framptonSignalsStepper, _framptonHistoryGet_location, _framptonHistoryHash_stream) {
+define('frampton-history/get_history', ['exports', 'module', 'frampton/namespace'], function (exports, module, _framptonNamespace) {
   'use strict';
 
-  module.exports = hash;
+  module.exports = ajax_api;
 
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  var _stepper = _interopRequireDefault(_framptonSignalsStepper);
+  var _Frampton = _interopRequireDefault(_framptonNamespace);
 
-  var _location = _interopRequireDefault(_framptonHistoryGet_location);
+  function createMockHistory() {
 
-  var _hashStream = _interopRequireDefault(_framptonHistoryHash_stream);
+    return {
+      state: null,
+      pushState: function pushState(state, title, url) {},
+      replaceState: function replaceState(state, title, url) {}
+    };
+  }
 
-  var instance = null;
-
-  /**
-   * A Behavior representing the current location.hash
-   *
-   * @name hash
-   * @method
-   * @memberof Frampton.History
-   * @returns {Frampton.Signals.Behavior}
-   */
-
-  function hash() {
-    if (!instance) {
-      instance = _stepper['default'](_location['default']().hash, _hashStream['default']());
+  function ajax_api() {
+    if (_Frampton['default'].isTest()) {
+      return createMockHistory();
+    } else {
+      return window.history;
     }
-    return instance;
   }
 });
-define('frampton-history/hash_stream', ['exports', 'module', 'frampton-history/location_stream'], function (exports, module, _framptonHistoryLocation_stream) {
+define('frampton-history/get_location', ['exports', 'module', 'frampton/namespace'], function (exports, module, _framptonNamespace) {
+  'use strict';
+
+  module.exports = ajax_api;
+
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+  var _Frampton = _interopRequireDefault(_framptonNamespace);
+
+  function ajax_api() {
+    if (_Frampton['default'].isTest()) {
+      return {
+        pathname: '/test/path',
+        search: '?test=true'
+      };
+    } else {
+      return window.location;
+    }
+  }
+});
+define('frampton-history/hash_signal', ['exports', 'module', 'frampton-utils/is_nothing', 'frampton-history/location_signal'], function (exports, module, _framptonUtilsIs_nothing, _framptonHistoryLocation_signal) {
   'use strict';
 
   module.exports = hash_stream;
 
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  var _locationStream = _interopRequireDefault(_framptonHistoryLocation_stream);
+  var _isNothing = _interopRequireDefault(_framptonUtilsIs_nothing);
+
+  var _location = _interopRequireDefault(_framptonHistoryLocation_signal);
 
   var instance = null;
 
   /**
-   * Returns an EventStream of the current location.hash
+   * Returns an Signal of the current location.hash
    *
    * @name hashStream
    * @method
    * @private
    * @memberof Frampton.History
-   * @returns {Frampton.Signals.EventStream}
+   * @returns {Frampton.Signal.Signal}
    */
 
   function hash_stream() {
-    if (!instance) {
-      instance = _locationStream['default']().map(function (loc) {
+    if (_isNothing['default'](instance)) {
+      instance = _location['default']().map(function (loc) {
         return loc.hash.replace('#', '');
       });
     }
     return instance;
   }
 });
-define('frampton-history/history_change', ['exports', 'module', 'frampton-history/history_stream'], function (exports, module, _framptonHistoryHistory_stream) {
+define('frampton-history/hash', ['exports', 'module', 'frampton-signal/stepper', 'frampton-history/get_location', 'frampton-history/hash_signal'], function (exports, module, _framptonSignalStepper, _framptonHistoryGet_location, _framptonHistoryHash_signal) {
+  'use strict';
+
+  module.exports = hash;
+
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+  var _stepper = _interopRequireDefault(_framptonSignalStepper);
+
+  var _location = _interopRequireDefault(_framptonHistoryGet_location);
+
+  var _hashSignal = _interopRequireDefault(_framptonHistoryHash_signal);
+
+  var instance = null;
+
+  /**
+   * A Signal representing the current location.hash
+   *
+   * @name hash
+   * @method
+   * @memberof Frampton.History
+   * @returns {Frampton.Signal.Signal}
+   */
+
+  function hash() {
+    if (!instance) {
+      instance = _stepper['default'](_location['default']().hash, _hashSignal['default']());
+    }
+    return instance;
+  }
+});
+define('frampton-history/history_change', ['exports', 'module', 'frampton-history/history_signal'], function (exports, module, _framptonHistoryHistory_signal) {
   'use strict';
 
   module.exports = history_change;
 
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  var _historyStream = _interopRequireDefault(_framptonHistoryHistory_stream);
+  var _history = _interopRequireDefault(_framptonHistoryHistory_signal);
 
   /**
    * @name historyChange
@@ -179,10 +209,48 @@ define('frampton-history/history_change', ['exports', 'module', 'frampton-histor
    */
 
   function history_change(fn) {
-    return _historyStream['default']().next(fn);
+    return _history['default']().next(fn);
   }
 });
-define('frampton-history/history_stack', ['exports', 'frampton-list/last', 'frampton-history/depth', 'frampton-history/stack_stream'], function (exports, _framptonListLast, _framptonHistoryDepth, _framptonHistoryStack_stream) {
+define('frampton-history/history_signal', ['exports', 'module', 'frampton-utils/is_nothing', 'frampton-history/get_history', 'frampton-history/stack_signal', 'frampton-history/popstate_signal'], function (exports, module, _framptonUtilsIs_nothing, _framptonHistoryGet_history, _framptonHistoryStack_signal, _framptonHistoryPopstate_signal) {
+  'use strict';
+
+  module.exports = history_signal;
+
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+  var _isNothing = _interopRequireDefault(_framptonUtilsIs_nothing);
+
+  var _history = _interopRequireDefault(_framptonHistoryGet_history);
+
+  var _stack = _interopRequireDefault(_framptonHistoryStack_signal);
+
+  var _popstate = _interopRequireDefault(_framptonHistoryPopstate_signal);
+
+  var instance = null;
+
+  /**
+   * Returns a Signal of the current window.history
+   *
+   * @name historySignal
+   * @method
+   * @private
+   * @memberof Frampton.History
+   * @returns {Frampton.Signal.Signal}
+   */
+
+  function history_signal() {
+
+    if (_isNothing['default'](instance)) {
+      instance = _stack['default']().merge(_popstate['default']()).map(function () {
+        return _history['default']();
+      });
+    }
+
+    return instance;
+  }
+});
+define('frampton-history/history_stack', ['exports', 'frampton-list/last', 'frampton-history/depth', 'frampton-history/stack_signal'], function (exports, _framptonListLast, _framptonHistoryDepth, _framptonHistoryStack_signal) {
   'use strict';
 
   exports.__esModule = true;
@@ -193,7 +261,10 @@ define('frampton-history/history_stack', ['exports', 'frampton-list/last', 'fram
 
   var _depth = _interopRequireDefault(_framptonHistoryDepth);
 
-  var _stackStream = _interopRequireDefault(_framptonHistoryStack_stream);
+  var _stack = _interopRequireDefault(_framptonHistoryStack_signal);
+
+  var depthSignal = _depth['default']();
+  var stackSignal = _stack['default']();
 
   /**
    * The current state of the application history.
@@ -203,7 +274,7 @@ define('frampton-history/history_stack', ['exports', 'frampton-list/last', 'fram
    * @memberof Frampton.History
    * @type {Object}
    */
-  var stack = {
+  var state = {
     currentState: null,
     currentId: 0,
     _store: []
@@ -220,11 +291,11 @@ define('frampton-history/history_stack', ['exports', 'frampton-list/last', 'fram
    * @param {Object} newState
    */
   var pushHistory = function push_state(newState) {
-    stack._store.push(newState);
-    stack.currentState = newState;
-    stack.currentId = newState.id;
-    _depth['default']().update(stack._store.length);
-    _stackStream['default']().pushNext(null);
+    state._store.push(newState);
+    state.currentState = newState;
+    state.currentId = newState.id;
+    depthSignal(state._store.length);
+    stackSignal(null);
   };
 
   /**
@@ -237,9 +308,9 @@ define('frampton-history/history_stack', ['exports', 'frampton-list/last', 'fram
    * @param {Object} newState
    */
   var replaceHistory = function replace_state(newState) {
-    stack.currentState = newState;
-    stack.currentId = newState.id;
-    _stackStream['default']().pushNext(null);
+    state.currentState = newState;
+    state.currentId = newState.id;
+    stackSignal(null);
   };
 
   /**
@@ -252,94 +323,58 @@ define('frampton-history/history_stack', ['exports', 'frampton-list/last', 'fram
    * @memberof Frampton.History
    */
   var popHistory = function pop_history() {
-    stack._store.pop();
-    stack.currentState = _last['default'](stack._store);
-    stack.currentId = stack.currentState ? stack.currentState.id : 0;
-    _depth['default']().update(stack._store.length);
-    _stackStream['default']().pushNext(null);
+    state._store.pop();
+    state.currentState = _last['default'](state._store);
+    state.currentId = state.currentState ? state.currentState.id : 0;
+    depthSignal(state._store.length);
+    stackSignal(null);
   };
 
-  exports.stack = stack;
+  exports.stack = state;
   exports.pushHistory = pushHistory;
   exports.replaceHistory = replaceHistory;
   exports.popHistory = popHistory;
 });
-define('frampton-history/history_stream', ['exports', 'module', 'frampton-utils/is_nothing', 'frampton-history/get_history', 'frampton-history/stack_stream', 'frampton-history/popstate_stream'], function (exports, module, _framptonUtilsIs_nothing, _framptonHistoryGet_history, _framptonHistoryStack_stream, _framptonHistoryPopstate_stream) {
+define('frampton-history/location_signal', ['exports', 'module', 'frampton-utils/is_nothing', 'frampton-history/history_signal', 'frampton-history/get_location'], function (exports, module, _framptonUtilsIs_nothing, _framptonHistoryHistory_signal, _framptonHistoryGet_location) {
   'use strict';
 
-  module.exports = history_stream;
+  module.exports = location_signal;
 
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
   var _isNothing = _interopRequireDefault(_framptonUtilsIs_nothing);
 
-  var _history = _interopRequireDefault(_framptonHistoryGet_history);
-
-  var _stack = _interopRequireDefault(_framptonHistoryStack_stream);
-
-  var _popstate = _interopRequireDefault(_framptonHistoryPopstate_stream);
-
-  var instance = null;
-
-  /**
-   * Returns a stream of the current window.history
-   *
-   * @name historyStream
-   * @method
-   * @private
-   * @memberof Frampton.History
-   * @returns {Frampton.Signals.EventStream}
-   */
-
-  function history_stream() {
-
-    if (_isNothing['default'](instance)) {
-      instance = _stack['default']().merge(_popstate['default']()).map(function () {
-        return _history['default']();
-      });
-    }
-
-    return instance;
-  }
-});
-define('frampton-history/location_stream', ['exports', 'module', 'frampton-history/history_stream', 'frampton-history/get_location'], function (exports, module, _framptonHistoryHistory_stream, _framptonHistoryGet_location) {
-  'use strict';
-
-  module.exports = location_stream;
-
-  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-  var _historyStream = _interopRequireDefault(_framptonHistoryHistory_stream);
+  var _history = _interopRequireDefault(_framptonHistoryHistory_signal);
 
   var _location = _interopRequireDefault(_framptonHistoryGet_location);
 
   var instance = null;
 
   /**
-   * @name locationStream
+   * @name locationSignal
    * @method
    * @private
    * @memberof Frampton.History
-   * @returns {Frampton.Signals.EventStream}
+   * @returns {Frampton.Signal.Signal}
    */
 
-  function location_stream() {
-    if (!instance) {
-      instance = _historyStream['default']().map(function () {
+  function location_signal() {
+    if (_isNothing['default'](instance)) {
+      instance = _history['default']().map(function () {
         return _location['default']();
       });
     }
     return instance;
   }
 });
-define('frampton-history/parse_search', ['exports', 'module', 'frampton-utils/memoize', 'frampton-io/http/query_unescape'], function (exports, module, _framptonUtilsMemoize, _framptonIoHttpQuery_unescape) {
+define('frampton-history/parse_search', ['exports', 'module', 'frampton-utils/memoize', 'frampton-io/http/utils/query_unescape'], function (exports, module, _framptonUtilsMemoize, _framptonIoHttpUtilsQuery_unescape) {
   'use strict';
 
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
   var _memoize = _interopRequireDefault(_framptonUtilsMemoize);
 
-  var _queryUnescape = _interopRequireDefault(_framptonIoHttpQuery_unescape);
+  var _queryUnescape = _interopRequireDefault(_framptonIoHttpUtilsQuery_unescape);
 
   function validPair(pair) {
     return pair.length === 2 && pair[0] !== '' && pair[1] !== '';
@@ -367,97 +402,99 @@ define('frampton-history/parse_search', ['exports', 'module', 'frampton-utils/me
     return obj;
   });
 });
-define('frampton-history/path', ['exports', 'module', 'frampton-signals/stepper', 'frampton-history/get_location', 'frampton-history/path_stream'], function (exports, module, _framptonSignalsStepper, _framptonHistoryGet_location, _framptonHistoryPath_stream) {
+define('frampton-history/path_signal', ['exports', 'module', 'frampton-history/location_signal'], function (exports, module, _framptonHistoryLocation_signal) {
   'use strict';
 
-  module.exports = path;
+  module.exports = path_signal;
 
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  var _stepper = _interopRequireDefault(_framptonSignalsStepper);
-
-  var _location = _interopRequireDefault(_framptonHistoryGet_location);
-
-  var _pathStream = _interopRequireDefault(_framptonHistoryPath_stream);
+  var _location = _interopRequireDefault(_framptonHistoryLocation_signal);
 
   var instance = null;
 
   /**
-   * A Behavior representing the current location.pathname
+   * Returns an Signal of updates to location.pathname
    *
-   * @name path
-   * @method
-   * @memberof Frampton.History
-   * @returns {Frampton.Signals.Behavior}
-   */
-
-  function path() {
-    if (!instance) {
-      instance = _stepper['default'](_location['default']().pathname, _pathStream['default']());
-    }
-    return instance;
-  }
-});
-define('frampton-history/path_stream', ['exports', 'module', 'frampton-history/location_stream'], function (exports, module, _framptonHistoryLocation_stream) {
-  'use strict';
-
-  module.exports = path_stream;
-
-  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-  var _locationStream = _interopRequireDefault(_framptonHistoryLocation_stream);
-
-  var instance = null;
-
-  /**
-   * Returns an EventStream of updates to location.pathname
-   *
-   * @name pathStream
+   * @name pathSignal
    * @method
    * @private
    * @memberof Frampton.History
-   * @returns {Frampton.Signals.EventStream}
+   * @returns {Frampton.Signal.Signal}
    */
 
-  function path_stream() {
+  function path_signal() {
     if (!instance) {
-      instance = _locationStream['default']().map(function (loc) {
+      instance = _location['default']().map(function (loc) {
         return loc.pathname;
       });
     }
     return instance;
   }
 });
-define('frampton-history/popstate_stream', ['exports', 'module', 'frampton-utils/is_nothing', 'frampton-events/listen', 'frampton-history/history_stack'], function (exports, module, _framptonUtilsIs_nothing, _framptonEventsListen, _framptonHistoryHistory_stack) {
+define('frampton-history/path', ['exports', 'module', 'frampton-signal/stepper', 'frampton-history/get_location', 'frampton-history/path_signal'], function (exports, module, _framptonSignalStepper, _framptonHistoryGet_location, _framptonHistoryPath_signal) {
   'use strict';
 
-  module.exports = popstate_stream;
+  module.exports = path;
+
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+  var _stepper = _interopRequireDefault(_framptonSignalStepper);
+
+  var _location = _interopRequireDefault(_framptonHistoryGet_location);
+
+  var _pathSignal = _interopRequireDefault(_framptonHistoryPath_signal);
+
+  var instance = null;
+
+  /**
+   * A Signal representing the current location.pathname
+   *
+   * @name path
+   * @method
+   * @memberof Frampton.History
+   * @returns {Frampton.Signal.Signal}
+   */
+
+  function path() {
+    if (!instance) {
+      instance = _stepper['default'](_location['default']().pathname, _pathSignal['default']());
+    }
+    return instance;
+  }
+});
+define('frampton-history/popstate_signal', ['exports', 'module', 'frampton-utils/is_nothing', 'frampton-events/on_event', 'frampton-history/history_stack'], function (exports, module, _framptonUtilsIs_nothing, _framptonEventsOn_event, _framptonHistoryHistory_stack) {
+  'use strict';
+
+  module.exports = popstate_signal;
 
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
   var _isNothing = _interopRequireDefault(_framptonUtilsIs_nothing);
 
+  var _onEvent = _interopRequireDefault(_framptonEventsOn_event);
+
   var instance = null;
 
   /**
-   * Returns a stream of popstate events. Also helps to internally keep track of
+   * Returns a Signal of popstate events. Also helps to internally keep track of
    * the current depth of the history stack.
    *
-   * @name popstateStream
+   * @name popstateSignal
    * @method
    * @private
    * @memberof Frampton.History
-   * @returns {Frampton.Signals.EventStream}
+   * @returns {Frampton.Signal.Siganl}
    */
 
-  function popstate_stream() {
+  function popstate_signal() {
 
     if (!window.history || !window.history.pushState) {
       throw new Error('History API is not supported by this browser');
     }
 
     if (_isNothing['default'](instance)) {
-      instance = _framptonEventsListen.listen('popstate', window).map(function (evt) {
+      instance = _onEvent['default']('popstate', window).map(function (evt) {
         if (evt.state) {
           if (evt.state.id < _framptonHistoryHistory_stack.stack.currentId) {
             _framptonHistoryHistory_stack.popHistory();
@@ -518,67 +555,69 @@ define('frampton-history/replace_state', ['exports', 'module', 'frampton-utils/g
     _framptonHistoryHistory_stack.replaceHistory(state);
   });
 });
-define('frampton-history/search', ['exports', 'module', 'frampton-signals/stepper', 'frampton-history/get_location', 'frampton-history/search_stream', 'frampton-history/parse_search'], function (exports, module, _framptonSignalsStepper, _framptonHistoryGet_location, _framptonHistorySearch_stream, _framptonHistoryParse_search) {
+define('frampton-history/search_signal', ['exports', 'module', 'frampton-utils/is_nothing', 'frampton-history/location_signal', 'frampton-history/parse_search'], function (exports, module, _framptonUtilsIs_nothing, _framptonHistoryLocation_signal, _framptonHistoryParse_search) {
+  'use strict';
+
+  module.exports = hash_signal;
+
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+  var _isNothing = _interopRequireDefault(_framptonUtilsIs_nothing);
+
+  var _location = _interopRequireDefault(_framptonHistoryLocation_signal);
+
+  var _parseSearch = _interopRequireDefault(_framptonHistoryParse_search);
+
+  var instance = null;
+
+  /**
+   * Returns an Signal of updates to location.search
+   *
+   * @name searchSignal
+   * @method
+   * @private
+   * @memberof Frampton.History
+   * @returns {Frampton.Signal.Signal}
+   */
+
+  function hash_signal() {
+    if (_isNothing['default'](instance)) {
+      instance = _location['default']().map(function (loc) {
+        return _parseSearch['default'](loc.search || '');
+      });
+    }
+    return instance;
+  }
+});
+define('frampton-history/search', ['exports', 'module', 'frampton-signal/stepper', 'frampton-history/get_location', 'frampton-history/search_signal', 'frampton-history/parse_search'], function (exports, module, _framptonSignalStepper, _framptonHistoryGet_location, _framptonHistorySearch_signal, _framptonHistoryParse_search) {
   'use strict';
 
   module.exports = search;
 
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  var _stepper = _interopRequireDefault(_framptonSignalsStepper);
+  var _stepper = _interopRequireDefault(_framptonSignalStepper);
 
   var _location = _interopRequireDefault(_framptonHistoryGet_location);
 
-  var _searchStream = _interopRequireDefault(_framptonHistorySearch_stream);
+  var _searchSignal = _interopRequireDefault(_framptonHistorySearch_signal);
 
   var _parseSearch = _interopRequireDefault(_framptonHistoryParse_search);
 
   var instance = null;
 
   /**
-   * A Behavior representing the current location.search
+   * A Signal representing the current location.search
    *
    * @name search
    * @method
    * @memberof Frampton.History
-   * @returns {Frampton.Signals.Behavior}
+   * @returns {Frampton.Signal.Signal}
    */
 
   function search() {
     if (!instance) {
-      instance = _stepper['default'](_parseSearch['default'](_location['default']().search || ''), _searchStream['default']());
-    }
-    return instance;
-  }
-});
-define('frampton-history/search_stream', ['exports', 'module', 'frampton-history/location_stream', 'frampton-history/parse_search'], function (exports, module, _framptonHistoryLocation_stream, _framptonHistoryParse_search) {
-  'use strict';
-
-  module.exports = hash_stream;
-
-  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-  var _locationStream = _interopRequireDefault(_framptonHistoryLocation_stream);
-
-  var _parseSearch = _interopRequireDefault(_framptonHistoryParse_search);
-
-  var instance = null;
-
-  /**
-   * Returns an EventStream of updates to location.search
-   *
-   * @name searchStream
-   * @method
-   * @private
-   * @memberof Frampton.History
-   * @returns {Frampton.Signals.EventStream}
-   */
-
-  function hash_stream() {
-    if (!instance) {
-      instance = _locationStream['default']().map(function (loc) {
-        return _parseSearch['default'](loc.search || '');
-      });
+      instance = _stepper['default'](_parseSearch['default'](_location['default']().search || ''), _searchSignal['default']());
     }
     return instance;
   }
@@ -602,95 +641,99 @@ define('frampton-history/set_hash', ['exports', 'module', 'frampton-history/hist
     });
   }
 });
-define('frampton-history/stack_stream', ['exports', 'module', 'frampton-utils/is_nothing', 'frampton-signals/empty'], function (exports, module, _framptonUtilsIs_nothing, _framptonSignalsEmpty) {
+define('frampton-history/stack_signal', ['exports', 'module', 'frampton-utils/is_nothing', 'frampton-signal/create'], function (exports, module, _framptonUtilsIs_nothing, _framptonSignalCreate) {
   'use strict';
 
-  module.exports = stack_stream;
+  module.exports = stack_signal;
 
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
   var _isNothing = _interopRequireDefault(_framptonUtilsIs_nothing);
 
-  var _empty = _interopRequireDefault(_framptonSignalsEmpty);
+  var _create = _interopRequireDefault(_framptonSignalCreate);
 
   var instance = null;
 
   /**
-   * EventStream of changes to the history stack
+   * Signal of changes to the history stack
    *
-   * @name stackStream
+   * @name stackSignal
    * @method
    * @private
    * @memberof Frampton.History
-   * @returns {Frampton.Signals.EventStream}
+   * @returns {Frampton.Signal.Signal}
    */
 
-  function stack_stream() {
+  function stack_signal() {
 
     if (_isNothing['default'](instance)) {
-      instance = _empty['default']();
+      instance = _create['default']();
     }
 
     return instance;
   }
 });
-define('frampton-history/state', ['exports', 'module', 'frampton-signals/stepper', 'frampton-history/get_history', 'frampton-history/state_stream'], function (exports, module, _framptonSignalsStepper, _framptonHistoryGet_history, _framptonHistoryState_stream) {
+define('frampton-history/state_signal', ['exports', 'module', 'frampton-utils/is_nothing', 'frampton-history/history_signal'], function (exports, module, _framptonUtilsIs_nothing, _framptonHistoryHistory_signal) {
+  'use strict';
+
+  module.exports = state_signal;
+
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+  var _isNothing = _interopRequireDefault(_framptonUtilsIs_nothing);
+
+  var _history = _interopRequireDefault(_framptonHistoryHistory_signal);
+
+  var instance = null;
+
+  /**
+   * Returns an Signal of updates to history.state
+   *
+   * @name stateSignal
+   * @method
+   * @private
+   * @memberof Frampton.History
+   * @returns {Frampton.Signal.Signal}
+   */
+
+  function state_signal() {
+    if (_isNothing['default'](instance)) {
+      instance = _history['default']().map(function (h) {
+        return h.state;
+      });
+    }
+    return instance;
+  }
+});
+define('frampton-history/state', ['exports', 'module', 'frampton-utils/is_nothing', 'frampton-signal/stepper', 'frampton-history/get_history', 'frampton-history/state_signal'], function (exports, module, _framptonUtilsIs_nothing, _framptonSignalStepper, _framptonHistoryGet_history, _framptonHistoryState_signal) {
   'use strict';
 
   module.exports = state;
 
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  var _stepper = _interopRequireDefault(_framptonSignalsStepper);
+  var _isNothing = _interopRequireDefault(_framptonUtilsIs_nothing);
+
+  var _stepper = _interopRequireDefault(_framptonSignalStepper);
 
   var _history = _interopRequireDefault(_framptonHistoryGet_history);
 
-  var _stateStream = _interopRequireDefault(_framptonHistoryState_stream);
+  var _stateSignal = _interopRequireDefault(_framptonHistoryState_signal);
 
   var instance = null;
 
   /**
-   * A Behavior representing the current history.state
+   * A Signal representing the current history.state
    *
    * @name state
    * @method
    * @memberof Frampton.History
-   * @returns {Frampton.Signals.Behavior}
+   * @returns {Frampton.Signal.Signal}
    */
 
   function state() {
-    if (!instance) {
-      instance = _stepper['default'](_history['default']().state, _stateStream['default']());
-    }
-    return instance;
-  }
-});
-define('frampton-history/state_stream', ['exports', 'module', 'frampton-history/history_stream'], function (exports, module, _framptonHistoryHistory_stream) {
-  'use strict';
-
-  module.exports = state_stream;
-
-  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-  var _historyStream = _interopRequireDefault(_framptonHistoryHistory_stream);
-
-  var instance = null;
-
-  /**
-   * Returns an EventStream of updates to history.state
-   *
-   * @name stateStream
-   * @method
-   * @private
-   * @memberof Frampton.History
-   * @returns {Frampton.Signals.EventStream}
-   */
-
-  function state_stream() {
-    if (!instance) {
-      instance = _historyStream['default']().map(function (h) {
-        return h.state;
-      });
+    if (_isNothing['default'](instance)) {
+      instance = _stepper['default'](_history['default']().state, _stateSignal['default']());
     }
     return instance;
   }

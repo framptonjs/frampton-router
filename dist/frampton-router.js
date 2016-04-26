@@ -32,7 +32,7 @@ define('frampton-router', ['exports', 'frampton/namespace', 'frampton-router/rou
    * @memberof Frampton
    */
   _Frampton['default'].Router = {};
-  _Frampton['default'].Router.VERSION = '0.0.2';
+  _Frampton['default'].Router.VERSION = '0.0.3';
   _Frampton['default'].Router.match = _match['default'];
   _Frampton['default'].Router.create = _router['default'];
   _Frampton['default'].Router.route = _route['default'];

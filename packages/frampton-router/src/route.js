@@ -9,7 +9,7 @@
 export default function create_route(path, fn) {
   return {
     path : path,
-    fn : function(...args) {
+    fn : (...args) => {
       return fn.apply(null, args);
     },
     _isRoute : true
