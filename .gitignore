@@ -1,7 +1,7 @@
 .DS_Store
 node_modules
 dist/frampton-router-tests.js
-docs/fonts
+docs/
 notes.txt
 tmp
 *.log
