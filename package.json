@@ -5,7 +5,11 @@
   "scripts": {
     "test": "frampton test",
     "build": "frampton build",
-    "docs": "rm -rfv docs/* && jsdoc dist/frampton-router.js -d docs --readme README.md  --private"
+    "clean-install": "rm -rf node_modules; npm install",
+    "release": "frampton release --patch",
+    "minor-release": "frampton release --minor",
+    "major-release": "frampton release --major",
+    "docs": "rm -rf docs/* && jsdoc dist/frampton-router.js -d docs --readme README.md  --private"
   },
   "author": "Kevin Greene <hightimesteddy@gmail.com>",
   "license": "MIT",
@@ -18,9 +22,10 @@
   },
   "homepage": "https://github.com/framptonjs/frampton-router",
   "devDependencies": {
-    "broccoli": "^0.16.2",
-    "broccoli-cli": "^1.0.0",
-    "frampton-build": "*",
-    "qunitjs": "^1.16.0"
+    "frampton": "0.2.2",
+    "frampton-io": "0.1.2",
+    "frampton-build": "0.0.6",
+    "frampton-cli": "0.0.10",
+    "jsdoc": "3.4.0"
   }
 }

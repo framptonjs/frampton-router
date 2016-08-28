@@ -13,91 +13,160 @@ var global = this;
   require = Frampton.__loader.require;
 
 }());
-define('frampton-router', ['exports', 'frampton/namespace', 'frampton-router/router', 'frampton-router/route', 'frampton-router/match'], function (exports, _framptonNamespace, _framptonRouterRouter, _framptonRouterRoute, _framptonRouterMatch) {
+define('frampton-router', ['frampton/namespace', 'frampton-router/router', 'frampton-router/route', 'frampton-router/match'], function (_namespace, _router, _route, _match) {
   'use strict';
 
-  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+  var _namespace2 = _interopRequireDefault(_namespace);
 
-  var _Frampton = _interopRequireDefault(_framptonNamespace);
+  var _router2 = _interopRequireDefault(_router);
 
-  var _router = _interopRequireDefault(_framptonRouterRouter);
+  var _route2 = _interopRequireDefault(_route);
 
-  var _route = _interopRequireDefault(_framptonRouterRoute);
+  var _match2 = _interopRequireDefault(_match);
 
-  var _match = _interopRequireDefault(_framptonRouterMatch);
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
 
   /**
    * @name Router
    * @namespace
    * @memberof Frampton
    */
-  _Frampton['default'].Router = {};
-  _Frampton['default'].Router.VERSION = '0.0.3';
-  _Frampton['default'].Router.match = _match['default'];
-  _Frampton['default'].Router.create = _router['default'];
-  _Frampton['default'].Router.route = _route['default'];
+  _namespace2.default.Router = {};
+  _namespace2.default.Router.VERSION = '0.0.3';
+  _namespace2.default.Router.match = _match2.default;
+  _namespace2.default.Router.create = _router2.default;
+  _namespace2.default.Router.route = _route2.default;
 });
-define('frampton-router/dynamic_path', ['exports', 'module', 'frampton-utils/memoize', 'frampton-string/replace'], function (exports, module, _framptonUtilsMemoize, _framptonStringReplace) {
+define('frampton-router/dynamic_path', ['exports', 'frampton-utils/memoize', 'frampton-string/replace'], function (exports, _memoize, _replace) {
   'use strict';
 
-  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 
-  var _memoize = _interopRequireDefault(_framptonUtilsMemoize);
+  var _memoize2 = _interopRequireDefault(_memoize);
 
-  var _replace = _interopRequireDefault(_framptonStringReplace);
+  var _replace2 = _interopRequireDefault(_replace);
 
-  module.exports = _memoize['default'](_replace['default']('', '/:'));
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
+
+  exports.default = (0, _memoize2.default)((0, _replace2.default)('', '/:'));
 });
-define('frampton-router/is_dynamic_path', ['exports', 'module', 'frampton-utils/memoize', 'frampton-string/starts_with'], function (exports, module, _framptonUtilsMemoize, _framptonStringStarts_with) {
+define('frampton-router/is_dynamic_path', ['exports', 'frampton-utils/memoize', 'frampton-string/starts_with'], function (exports, _memoize, _starts_with) {
   'use strict';
 
-  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 
-  var _memoize = _interopRequireDefault(_framptonUtilsMemoize);
+  var _memoize2 = _interopRequireDefault(_memoize);
 
-  var _startsWith = _interopRequireDefault(_framptonStringStarts_with);
+  var _starts_with2 = _interopRequireDefault(_starts_with);
 
-  module.exports = _memoize['default'](_startsWith['default'](':'));
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
+
+  exports.default = (0, _memoize2.default)((0, _starts_with2.default)(':'));
 });
-define('frampton-router/is_index', ['exports', 'module', 'frampton-string/starts_with'], function (exports, module, _framptonStringStarts_with) {
+define('frampton-router/is_index', ['exports', 'frampton-string/starts_with'], function (exports, _starts_with) {
   'use strict';
 
-  module.exports = is_index;
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = is_index;
 
-  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+  var _starts_with2 = _interopRequireDefault(_starts_with);
 
-  var _startsWith = _interopRequireDefault(_framptonStringStarts_with);
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
 
   function is_index(routePath, currentPath) {
-    return routePath === '/' && (currentPath === '/' || _startsWith['default']('index.', currentPath));
+    return routePath === '/' && (currentPath === '/' || (0, _starts_with2.default)('index.', currentPath));
   }
 });
-define('frampton-router/join_path', ['exports', 'module', 'frampton-string/join'], function (exports, module, _framptonStringJoin) {
+define('frampton-router/join_path', ['exports', 'frampton-string/join'], function (exports, _join) {
   'use strict';
 
-  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 
-  var _join = _interopRequireDefault(_framptonStringJoin);
+  var _join2 = _interopRequireDefault(_join);
 
-  module.exports = _join['default']('/');
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
+
+  exports.default = (0, _join2.default)('/');
 });
-define('frampton-router/match_route', ['exports', 'module', 'frampton-router/split_path', 'frampton-router/is_index', 'frampton-router/is_dynamic_path'], function (exports, module, _framptonRouterSplit_path, _framptonRouterIs_index, _framptonRouterIs_dynamic_path) {
+define('frampton-router/match', ['exports', 'frampton-utils/curry', 'frampton-router/match_route'], function (exports, _curry, _match_route) {
   'use strict';
 
-  module.exports = match_route;
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 
-  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+  var _curry2 = _interopRequireDefault(_curry);
 
-  var _splitPath = _interopRequireDefault(_framptonRouterSplit_path);
+  var _match_route2 = _interopRequireDefault(_match_route);
 
-  var _isIndex = _interopRequireDefault(_framptonRouterIs_index);
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
 
-  var _isDynamicPath = _interopRequireDefault(_framptonRouterIs_dynamic_path);
+  exports.default = (0, _curry2.default)(function (routes, path) {
+    for (var i = 0; i < routes.length; i++) {
+      var route = routes[i];
+      var tokens = (0, _match_route2.default)(route.path, path);
+      if (tokens) {
+        return route.fn.apply(null, tokens);
+      }
+    }
+  });
+});
+define('frampton-router/match_route', ['exports', 'frampton-router/split_path', 'frampton-router/is_index', 'frampton-router/is_dynamic_path'], function (exports, _split_path, _is_index, _is_dynamic_path) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = match_route;
+
+  var _split_path2 = _interopRequireDefault(_split_path);
+
+  var _is_index2 = _interopRequireDefault(_is_index);
+
+  var _is_dynamic_path2 = _interopRequireDefault(_is_dynamic_path);
+
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
 
   function match_route(route, path) {
 
-    var routeParts = _splitPath['default'](route);
-    var pathParts = _splitPath['default'](path);
+    var routeParts = (0, _split_path2.default)(route);
+    var pathParts = (0, _split_path2.default)(path);
     var rLen = routeParts.length;
     var pLen = pathParts.length;
     var len = rLen > pLen ? rLen : pLen;
@@ -109,7 +178,7 @@ define('frampton-router/match_route', ['exports', 'module', 'frampton-router/spl
       var currentPathPart = pathParts[j];
 
       if (currentRoutePart && currentPathPart) {
-        if (_isDynamicPath['default'](currentRoutePart)) {
+        if ((0, _is_dynamic_path2.default)(currentRoutePart)) {
           if (currentRoutePart === ':number' && isNaN(parseInt(currentPathPart))) {
             return null;
           } else if (currentRoutePart === ':string' && !isNaN(parseInt(currentPathPart))) {
@@ -119,7 +188,7 @@ define('frampton-router/match_route', ['exports', 'module', 'frampton-router/spl
         } else if (currentRoutePart !== currentPathPart) {
           return null;
         }
-      } else if (_isIndex['default'](currentRoutePart, currentPathPart)) {
+      } else if ((0, _is_index2.default)(currentRoutePart, currentPathPart)) {
         return tokens;
       } else {
         tokens.length = 0;
@@ -130,34 +199,12 @@ define('frampton-router/match_route', ['exports', 'module', 'frampton-router/spl
     return tokens;
   }
 });
-define('frampton-router/match', ['exports', 'module', 'frampton-utils/curry', 'frampton-router/match_route'], function (exports, module, _framptonUtilsCurry, _framptonRouterMatch_route) {
-  'use strict';
+define("frampton-router/route", ["exports"], function (exports) {
+  "use strict";
 
-  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-  var _curry = _interopRequireDefault(_framptonUtilsCurry);
-
-  var _matchRoute = _interopRequireDefault(_framptonRouterMatch_route);
-
-  /**
-   * match :: Route[] -> String -> a
-   * @name match
-   * @method
-   * @memberof Frampton.Router
-   * @param {Array} routes
-   * @param {String} path
-   */
-  module.exports = _curry['default'](function (routes, path) {
-    for (var i = 0; i < routes.length; i++) {
-      var route = routes[i];
-      var tokens = _matchRoute['default'](route.path, path);
-      if (tokens) {
-        return route.fn.apply(null, tokens);
-      }
-    }
+  Object.defineProperty(exports, "__esModule", {
+    value: true
   });
-});
-define("frampton-router/route", ["exports", "module"], function (exports, module) {
   /**
    * @name route
    * @method
@@ -166,10 +213,6 @@ define("frampton-router/route", ["exports", "module"], function (exports, module
    * @param {Function} fn
    * @returns {Object}
    */
-  "use strict";
-
-  module.exports = create_route;
-
   function create_route(path, _fn) {
     return {
       path: path,
@@ -183,32 +226,49 @@ define("frampton-router/route", ["exports", "module"], function (exports, module
       _isRoute: true
     };
   }
+  exports.default = create_route;
 });
-define('frampton-router/router', ['exports', 'module', 'frampton-utils/curry', 'frampton-router/match'], function (exports, module, _framptonUtilsCurry, _framptonRouterMatch) {
+define('frampton-router/router', ['exports', 'frampton-utils/curry', 'frampton-router/match'], function (exports, _curry, _match) {
   'use strict';
 
-  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 
-  var _curry = _interopRequireDefault(_framptonUtilsCurry);
+  var _curry2 = _interopRequireDefault(_curry);
 
-  var _match = _interopRequireDefault(_framptonRouterMatch);
+  var _match2 = _interopRequireDefault(_match);
 
-  module.exports = _curry['default'](function create_router(base, routes, path) {
-    return _match['default'](routes, path.replace(base, ''));
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
+
+  exports.default = (0, _curry2.default)(function create_router(base, routes, path) {
+    return (0, _match2.default)(routes, path.replace(base, ''));
   });
 });
-define('frampton-router/split_path', ['exports', 'module', 'frampton-utils/compose', 'frampton-utils/memoize', 'frampton-string/split', 'frampton-list/filter'], function (exports, module, _framptonUtilsCompose, _framptonUtilsMemoize, _framptonStringSplit, _framptonListFilter) {
+define('frampton-router/split_path', ['exports', 'frampton-utils/compose', 'frampton-utils/memoize', 'frampton-string/split', 'frampton-list/filter'], function (exports, _compose, _memoize, _split, _filter) {
   'use strict';
 
-  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
 
-  var _compose = _interopRequireDefault(_framptonUtilsCompose);
+  var _compose2 = _interopRequireDefault(_compose);
 
-  var _memoize = _interopRequireDefault(_framptonUtilsMemoize);
+  var _memoize2 = _interopRequireDefault(_memoize);
 
-  var _split = _interopRequireDefault(_framptonStringSplit);
+  var _split2 = _interopRequireDefault(_split);
 
-  var _filter = _interopRequireDefault(_framptonListFilter);
+  var _filter2 = _interopRequireDefault(_filter);
+
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
 
   var notEmpty = function notEmpty(str) {
     return str.trim() !== '';
@@ -222,8 +282,7 @@ define('frampton-router/split_path', ['exports', 'module', 'frampton-utils/compo
    * @param {String} path A path string to split
    * @returns {Array}
    */
-  module.exports = _memoize['default'](_compose['default'](_filter['default'](notEmpty), _split['default']('/')));
+  exports.default = (0, _memoize2.default)((0, _compose2.default)((0, _filter2.default)(notEmpty), (0, _split2.default)('/')));
 });
 require("frampton-router");
-
-}());
+})();
