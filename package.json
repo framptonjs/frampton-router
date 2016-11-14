@@ -22,8 +22,8 @@
   },
   "homepage": "https://github.com/framptonjs/frampton-router",
   "devDependencies": {
-    "frampton": "0.2.2",
-    "frampton-io": "0.1.2",
+    "frampton": "0.3.1",
+    "frampton-io": "0.1.3",
     "frampton-build": "0.0.6",
     "frampton-cli": "0.0.10",
     "jsdoc": "3.4.0"

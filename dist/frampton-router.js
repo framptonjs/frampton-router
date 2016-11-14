@@ -199,8 +199,8 @@ define('frampton-router/match_route', ['exports', 'frampton-router/split_path', 
     return tokens;
   }
 });
-define("frampton-router/route", ["exports"], function (exports) {
-  "use strict";
+define('frampton-router/route', ['exports'], function (exports) {
+  'use strict';
 
   Object.defineProperty(exports, "__esModule", {
     value: true
@@ -215,6 +215,7 @@ define("frampton-router/route", ["exports"], function (exports) {
    */
   function create_route(path, _fn) {
     return {
+      ctor: 'Frampton.Router.Route',
       path: path,
       fn: function fn() {
         for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
@@ -222,8 +223,7 @@ define("frampton-router/route", ["exports"], function (exports) {
         }
 
         return _fn.apply(null, args);
-      },
-      _isRoute: true
+      }
     };
   }
   exports.default = create_route;

@@ -8,10 +8,10 @@
  */
 export default function create_route(path, fn) {
   return {
+    ctor: 'Frampton.Router.Route',
     path : path,
     fn : (...args) => {
       return fn.apply(null, args);
-    },
-    _isRoute : true
+    }
   };
 }
