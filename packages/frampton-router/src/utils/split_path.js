@@ -3,7 +3,7 @@ import memoize from 'frampton-utils/memoize';
 import split from 'frampton-string/split';
 import filter from 'frampton-list/filter';
 
-var notEmpty = function(str) {
+const notEmpty = function(str) {
   return (str.trim() !== '');
 };
 

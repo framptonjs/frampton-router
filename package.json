@@ -1,7 +1,7 @@
 {
   "name": "frampton-router",
   "version": "0.0.5",
-  "description": "A module for managing browser history with frampton.js",
+  "description": "A module for navigating a SPA with frampton.js",
   "scripts": {
     "test": "frampton test",
     "build": "frampton build",
@@ -12,7 +12,7 @@
     "docs": "rm -rf docs/* && jsdoc dist/frampton-router.js -d docs --readme README.md  --private"
   },
   "author": "Kevin Greene <hightimesteddy@gmail.com>",
-  "license": "MIT",
+  "license": "BSD",
   "repository": {
     "type": "git",
     "url": "git@github.com:framptonjs/frampton-router.git"
@@ -22,8 +22,10 @@
   },
   "homepage": "https://github.com/framptonjs/frampton-router",
   "devDependencies": {
-    "frampton": "0.3.1",
+    "frampton": "0.3.4",
+    "frampton-dom": "0.1.4",
     "frampton-io": "0.1.3",
+    "frampton-history": "0.0.5",
     "frampton-build": "0.0.6",
     "frampton-cli": "0.0.10",
     "jsdoc": "3.4.0"
