@@ -38,7 +38,7 @@ define('frampton-router', ['frampton/namespace', 'frampton-router/parser', 'fram
    * @memberof Frampton
    */
   _namespace2.default.Router = {};
-  _namespace2.default.Router.VERSION = '0.0.5';
+  _namespace2.default.Router.VERSION = '0.1.0';
   _namespace2.default.Router.parser = _parser2.default;
   _namespace2.default.Router.oneOf = _one_of2.default;
   _namespace2.default.Router.map = _map2.default;

@@ -1,6 +1,6 @@
 {
   "name": "frampton-router",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "description": "A module for navigating a SPA with frampton.js",
   "scripts": {
     "test": "frampton test",
